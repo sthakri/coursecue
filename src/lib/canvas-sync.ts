@@ -94,6 +94,18 @@ export function buildSyncPlan(
 }
 
 /**
+ * PostgREST bulk upserts insert the union of payload keys and fill keys
+ * missing from a row with NULL — not the column default — so one row
+ * stamped with updated_at poisons every unstamped row in the same batch
+ * (NOT NULL violation kills the whole sync). Send uniform-key batches.
+ */
+export function partitionForUpsert(rows: TablesInsert<"assignments">[]) {
+  const stamped = rows.filter((r) => r.updated_at !== undefined);
+  const plain = rows.filter((r) => r.updated_at === undefined);
+  return [stamped, plain] as const;
+}
+
+/**
  * Sync one user's Canvas assignments into the DB.
  *
  * Shared by /api/canvas/sync (client-triggered) and the scheduled
@@ -230,10 +242,13 @@ export async function syncUserCanvas(
     }
 
     if (rows.length > 0) {
-      await serviceClient
-        .from("assignments")
-        .upsert(rows, { onConflict: "user_id,canvas_assignment_id" })
-        .throwOnError();
+      for (const batch of partitionForUpsert(rows)) {
+        if (batch.length === 0) continue;
+        await serviceClient
+          .from("assignments")
+          .upsert(batch, { onConflict: "user_id,canvas_assignment_id" })
+          .throwOnError();
+      }
     }
 
     await stampLastSync();

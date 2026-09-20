@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 // time. buildSyncPlan is pure, so stub env out (same pattern as crypto.test).
 vi.mock("@/lib/env", () => ({ env: {} }));
 
-import { buildSyncPlan } from "@/lib/canvas-sync";
+import { buildSyncPlan, partitionForUpsert } from "@/lib/canvas-sync";
 
 const NOW = "2026-09-11T12:00:00.000Z";
 const USER = "user-1";
@@ -117,5 +117,46 @@ describe("buildSyncPlan", () => {
     );
     expect(rows).toHaveLength(1);
     expect(rows[0].title).toBe("second"); // last write wins
+  });
+});
+
+describe("partitionForUpsert", () => {
+  it("splits mixed plans into uniform-key batches (PostgREST missing=null violated NOT NULL on updated_at)", () => {
+    // Real prod failure shape: one Canvas-completed transition (stamped
+    // updated_at) upserted alongside plain rows. PostgREST inserts the
+    // union of payload keys and fills missing keys with NULL — not the
+    // column default — so the plain rows got updated_at NULL and the
+    // whole sync died with 23502.
+    const { rows } = buildSyncPlan(
+      [
+        incoming({ canvas_assignment_id: 1, is_completed: true }),
+        incoming({ canvas_assignment_id: 2 }),
+      ],
+      [existing({ canvas_assignment_id: 1, is_completed: false })],
+      courseMap,
+      USER,
+      NOW
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows.some((r) => r.updated_at !== undefined)).toBe(true);
+
+    const [stamped, plain] = partitionForUpsert(rows);
+
+    // every batch must carry one uniform key set; the stamp must be the
+    // only difference between the two batches
+    const keySets = (batch: typeof rows) => [
+      ...new Set(batch.map((r) => Object.keys(r).sort().join(","))),
+    ];
+    expect(keySets(stamped)).toHaveLength(1);
+    expect(keySets(plain)).toHaveLength(1);
+    expect(keySets(stamped)[0]).toContain("updated_at");
+    expect(keySets(plain)[0]).not.toContain("updated_at");
+
+    // nothing lost, nothing duplicated; only the transition is stamped
+    expect(stamped.length + plain.length).toBe(rows.length);
+    expect(stamped.map((r) => r.canvas_assignment_id)).toEqual([1]);
+    expect(plain.map((r) => r.canvas_assignment_id)).toEqual([2]);
+    expect(stamped[0].updated_at).toBe(NOW);
+    expect(plain[0].updated_at).toBeUndefined();
   });
 });
