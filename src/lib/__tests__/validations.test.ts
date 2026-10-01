@@ -34,7 +34,7 @@ describe("canvasTestSchema", () => {
 describe("pushSubscribeSchema", () => {
   it("accepts valid input", () => {
     const result = pushSubscribeSchema.safeParse({
-      endpoint: "https://push.example.com/sub/123",
+      endpoint: "https://fcm.googleapis.com/fcm/send/123",
       p256dh: "p256dh-key-value",
       auth: "auth-key-value",
     });
@@ -52,7 +52,7 @@ describe("pushSubscribeSchema", () => {
 
   it("rejects missing fields", () => {
     const result = pushSubscribeSchema.safeParse({
-      endpoint: "https://push.example.com/sub/123",
+      endpoint: "https://fcm.googleapis.com/fcm/send/123",
     });
     expect(result.success).toBe(false);
   });
@@ -61,7 +61,7 @@ describe("pushSubscribeSchema", () => {
 describe("pushTestSchema", () => {
   it("accepts valid endpoint", () => {
     const result = pushTestSchema.safeParse({
-      endpoint: "https://push.example.com/sub/123",
+      endpoint: "https://fcm.googleapis.com/fcm/send/123",
     });
     expect(result.success).toBe(true);
   });

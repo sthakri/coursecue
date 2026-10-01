@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { env } from "@/lib/env";
+import { pushEndpointSchema } from "@/lib/validations";
 
 // Initialise VAPID details once at module load, not on every send.
 webpush.setVapidDetails(
@@ -14,6 +15,8 @@ export async function sendPushNotification(
   title = "DuePulse",
   ttlSeconds = 24 * 60 * 60
 ): Promise<void> {
+  // Validate stored rows too: older subscriptions did not restrict destinations.
+  pushEndpointSchema.parse(subscription.endpoint);
   // TTL bounds how long the push service may hold an undeliverable message.
   // Deadline nudges pass their time-until-due so a "due in 1h" nudge to an
   // offline phone can't arrive 20 hours stale.

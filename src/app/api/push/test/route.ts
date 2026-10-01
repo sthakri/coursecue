@@ -38,7 +38,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const raw: unknown = await req.json();
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const parsed = pushTestSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 422 });
@@ -52,12 +57,16 @@ export async function POST(req: NextRequest) {
     { cookies: { getAll: () => [], setAll: () => {} } }
   );
 
-  const { data: sub } = await serviceClient
+  const { data: sub, error: lookupError } = await serviceClient
     .from("push_subscriptions")
     .select("endpoint, p256dh, auth")
     .eq("user_id", userId)
     .eq("endpoint", endpoint)
-    .single();
+    .maybeSingle();
+
+  if (lookupError) {
+    return NextResponse.json({ error: "Could not check subscription. Try again later." }, { status: 500 });
+  }
 
   if (!sub) {
     return NextResponse.json({ error: "Subscription not found for this device — re-enable notifications", expired: true }, { status: 404 });

@@ -36,7 +36,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const raw: unknown = await req.json();
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const parsed = pushSubscribeSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 422 });
@@ -51,26 +56,47 @@ export async function POST(req: NextRequest) {
   );
 
   try {
-    // Endpoints are globally unique. Without this, a logged-in user could
-    // submit someone else's endpoint and steal/overwrite their row (their
-    // keys wouldn't match, silently killing the victim's notifications).
-    await serviceClient
+    const { data: existing } = await serviceClient
       .from("push_subscriptions")
-      .delete()
+      .select("user_id, p256dh, auth")
       .eq("endpoint", endpoint)
-      .neq("user_id", userId)
+      .maybeSingle()
       .throwOnError();
 
-    await serviceClient
-      .from("push_subscriptions")
-      .upsert(
-        { user_id: userId, endpoint, p256dh, auth },
-        { onConflict: "endpoint" }
-      )
-      .throwOnError();
+    // An account switch on the same browser may reuse the endpoint, but
+    // knowing an endpoint alone must never let someone take over its row.
+    if (existing && existing.user_id !== userId &&
+        (existing.p256dh !== p256dh || existing.auth !== auth)) {
+      return NextResponse.json({ error: "Subscription belongs to another device" }, { status: 409 });
+    }
+
+    const subscription = { user_id: userId, endpoint, p256dh, auth };
+    if (existing) {
+      // Match the observed ownership and keys atomically: concurrent changes
+      // must not be overwritten after the ownership check above.
+      const { data: updated } = await serviceClient
+        .from("push_subscriptions")
+        .update(subscription)
+        .eq("endpoint", endpoint)
+        .eq("user_id", existing.user_id)
+        .eq("p256dh", existing.p256dh)
+        .eq("auth", existing.auth)
+        .select("endpoint")
+        .maybeSingle()
+        .throwOnError();
+      if (!updated) {
+        return NextResponse.json({ error: "Subscription changed. Try again." }, { status: 409 });
+      }
+    } else {
+      // INSERT preserves a row created concurrently; UPSERT could take it over.
+      await serviceClient.from("push_subscriptions").insert(subscription).throwOnError();
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (typeof err === "object" && err !== null && "code" in err && err.code === "23505") {
+      return NextResponse.json({ error: "Subscription changed. Try again." }, { status: 409 });
+    }
     console.error("Push subscribe error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -93,7 +119,12 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
 
-  const raw: unknown = await req.json();
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const parsed = pushSubscribeSchema.partial({ p256dh: true, auth: true }).safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid endpoint" }, { status: 422 });
