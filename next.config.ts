@@ -24,6 +24,8 @@ export default withPWA({
   disable: isDev,
   register: true,
   skipWaiting: true,
+  cacheStartUrl: false,
+  dynamicStartUrl: false,
   runtimeCaching: [
     // Authenticated /api/* responses are intentionally NOT cached in
     // CacheStorage — they contain per-user data that must not survive logout

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, CheckCircle, LogOut, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { env } from "@/lib/env";
+import { enablePushNotifications, pushErrorMessage, unsubscribePushDevice } from "@/lib/push";
 
 async function encryptToken(plaintext: string): Promise<string> {
   const res = await fetch("/api/canvas/encrypt", {
@@ -19,16 +20,6 @@ async function encryptToken(plaintext: string): Promise<string> {
   return data.ciphertext;
 }
 
-function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
-  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const raw = atob(b64);
-  const buffer = new ArrayBuffer(raw.length);
-  const view = new Uint8Array(buffer);
-  for (let i = 0; i < raw.length; i++) view[i] = raw.charCodeAt(i);
-  return view as Uint8Array<ArrayBuffer>;
-}
-
 export default function OnboardingWizard({ userEmail }: { userEmail?: string }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -38,8 +29,10 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [courseCount, setCourseCount] = useState(0);
+  const enablingNotifications = useRef(false);
 
   async function handleSignOut() {
+    await unsubscribePushDevice();
     await createClient().auth.signOut({ scope: "global" });
     router.push("/");
   }
@@ -74,28 +67,25 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
   }
 
   async function handleEnableNotifications() {
+    if (enablingNotifications.current) return;
+    enablingNotifications.current = true;
+    setLoading(true);
     try {
-      const { data: { user } } = await createClient().auth.getUser();
-      if (!user) { setStep(4); return; }
-      if (isIOS() && !("Notification" in window)) { toast.info("Add DuePulse to your Home Screen to enable notifications on iPhone", { duration: 6000 }); setStep(4); return; }
-      if (!("Notification" in window)) { toast.error("Notifications are not supported in this browser"); setStep(4); return; }
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") { setStep(4); return; }
-      if (env.NEXT_PUBLIC_APP_ENV === "development") { toast.info("Push notifications are unavailable in development mode.", { duration: 6000 }); setStep(4); return; }
-      if (!("serviceWorker" in navigator)) { toast.error("Notifications are not supported in this browser"); setStep(4); return; }
-      let registration;
-      try {
-        const existing = await navigator.serviceWorker.getRegistration("/");
-        if (!existing) await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-        registration = await navigator.serviceWorker.ready;
-      } catch { toast.error("Failed to register service worker"); setStep(4); return; }
-      const sub = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) });
-      const json = sub.toJSON(); const keys = json.keys!;
-      const res = await fetch("/api/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: sub.endpoint, p256dh: keys.p256dh, auth: keys.auth }) });
-      if (!res.ok) throw new Error("Failed to save push subscription");
-      toast.success("Nudges enabled! You'll get timely reminders.");
-    } catch (err) { console.error(err); toast.error("Could not enable notifications. You can try again later."); }
-    setStep(4);
+      const result = await enablePushNotifications(env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+      if (result === "unsupported") {
+        toast.info(isIOS() ? "Open DuePulse from your Home Screen to enable notifications (iOS 16.4 or later)." : "Notifications are unavailable in this browser.");
+        return;
+      }
+      if (result === "idle") return;
+      if (result === "denied") toast.info("Notifications blocked — enable DuePulse in device settings.");
+      else toast.success("Nudges enabled! You'll get timely reminders.");
+      setStep(4);
+    } catch (error) {
+      toast.error(pushErrorMessage(error));
+    } finally {
+      enablingNotifications.current = false;
+      setLoading(false);
+    }
   }
 
   async function handleGoToDashboard() {
@@ -122,7 +112,7 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
         </Link>
         <div className="flex items-center gap-3">
           {userEmail && <span className="text-[#64748B] text-xs hidden sm:block truncate max-w-[120px]">{userEmail}</span>}
-          <button type="button" onClick={handleSignOut} className="flex items-center gap-1.5 text-[#64748B] hover:text-[#EF4444] text-xs transition-colors bg-transparent">
+          <button type="button" disabled={loading} onClick={handleSignOut} className="flex items-center gap-1.5 text-[#64748B] hover:text-[#EF4444] text-xs transition-colors bg-transparent">
             <LogOut size={13} /> Sign out
           </button>
         </div>
@@ -186,10 +176,10 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
             <h1 className="text-[#F8FAFC] font-bold text-2xl">Enable Nudges</h1>
             <p className="text-[#94A3B8] text-sm mt-1">Get timely reminders before assignments are due.</p>
           </div>
-          <button type="button" onClick={handleEnableNotifications} className="w-full rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm py-3 transition-colors shadow-[0_8px_25px_rgba(99,102,241,0.25)] min-h-11">Enable Nudges</button>
+          <button type="button" disabled={loading} aria-busy={loading} onClick={handleEnableNotifications} className="w-full rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm py-3 transition-colors shadow-[0_8px_25px_rgba(99,102,241,0.25)] min-h-11 disabled:opacity-60">{loading ? "Enabling nudges…" : "Enable Nudges"}</button>
           <div className="flex gap-3">
-            <button type="button" onClick={() => setStep(2)} className="flex-1 rounded-xl border border-[#334155] bg-transparent text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#243044] text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
-            <button type="button" onClick={() => setStep(4)} className="flex-[2] text-[#64748B] hover:text-[#94A3B8] text-sm py-3 bg-transparent min-h-11 transition-colors">Enable later in Settings</button>
+            <button type="button" disabled={loading} onClick={() => setStep(2)} className="flex-1 rounded-xl border border-[#334155] bg-transparent text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#243044] text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
+            <button type="button" disabled={loading} onClick={() => setStep(4)} className="flex-[2] text-[#64748B] hover:text-[#94A3B8] text-sm py-3 bg-transparent min-h-11 transition-colors">Enable later on Dashboard</button>
           </div>
         </div>
       )}

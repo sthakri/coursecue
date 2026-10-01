@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Share2, ArrowDown, Plus, CheckCircle, Ellipsis, Smartphone, Zap } from "lucide-react";
 
@@ -26,18 +26,23 @@ function isStandalone(): boolean {
   return window.matchMedia("(display-mode: standalone)").matches;
 }
 
+function subscribeToDisplayMode(onChange: () => void) {
+  const displayMode = window.matchMedia("(display-mode: standalone)");
+  displayMode.addEventListener("change", onChange);
+  return () => displayMode.removeEventListener("change", onChange);
+}
+
+function getDeviceStatus(): string {
+  return `${isStandalone() ? "installed" : "browser"}:${/Android/i.test(navigator.userAgent) ? "android" : "ios"}`;
+}
+
 export default function InstallPage() {
   const router = useRouter();
-  const [alreadyInstalled] = useState(() => isStandalone());
-  const [platform, setPlatform] = useState<Platform>(() => {
-    if (typeof navigator === "undefined") return "ios";
-    const ua = navigator.userAgent;
-    if (/Android/i.test(ua)) return "android";
-    // iPadOS 13+ reports a Mac-like UA — a Mac with touch points is an iPad.
-    if (/iPhone|iPad|iPod/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1)) return "ios";
-    // Desktop or unknown: default to iOS copy.
-    return "ios";
-  });
+  // Server and first hydration render must agree before reading device APIs.
+  const device = useSyncExternalStore(subscribeToDisplayMode, getDeviceStatus, () => "browser:ios");
+  const [selectedPlatform, setPlatform] = useState<Platform | null>(null);
+  const platform = selectedPlatform ?? (device.endsWith("android") ? "android" : "ios");
+  const alreadyInstalled = device.startsWith("installed:");
 
   function handleBypass() {
     try { sessionStorage.setItem("duepulse_install_bypass", "true"); } catch {}
