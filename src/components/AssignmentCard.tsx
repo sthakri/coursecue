@@ -60,7 +60,7 @@ export default function AssignmentCard({
   due_at,
   points_possible,
   canvas_assignment_id: _canvas_assignment_id,
-  course_color = "#6366F1",
+  course_color = "var(--primary)",
   userTz,
   is_completed = false,
 }: AssignmentCardProps) {
@@ -121,9 +121,8 @@ export default function AssignmentCard({
   return (
     <Card
       className={cn(
-        "rounded-[18px] bg-[#1E293B]/80 border border-[#334155]/70 p-4 flex flex-col gap-2 ring-0 shadow-none hover:border-[#6366F1]/40 hover:bg-[#243044]/80 transition-all duration-150 relative group",
-        isOverdue && "opacity-75",
-        completed && "opacity-60 bg-[#1E293B]/40"
+        "rounded-sm bg-card border border-border p-4 flex flex-col gap-2 ring-0 shadow-none hover:border-primary/40 hover:bg-surface-subtle transition-all duration-150 relative group",
+        completed && "bg-surface-subtle"
       )}
       style={{ borderLeft: `3px solid ${course_color}` }}
     >
@@ -138,8 +137,8 @@ export default function AssignmentCard({
           className={cn(
             "rounded-md p-1 transition disabled:opacity-50 flex items-center justify-center",
             completed
-              ? "bg-[#10B981]/20 text-[#10B981] hover:bg-[#10B981]/30"
-              : "text-[#64748B] hover:text-[#10B981] hover:bg-[#10B981]/10 border border-transparent hover:border-[#10B981]/20"
+              ? "bg-success-soft text-success hover:bg-success-soft"
+              : "text-muted-foreground hover:text-success hover:bg-success-soft border border-transparent hover:border-success/20"
           )}
         >
           <Check size={14} className={completed ? "stroke-[2.5]" : "stroke-[1.5]"} />
@@ -153,40 +152,40 @@ export default function AssignmentCard({
             disabled={dismissing}
             aria-label="Dismiss overdue assignment"
             title="Dismiss this overdue assignment"
-            className="rounded-md p-1 text-[#64748B] transition hover:bg-[#334155] hover:text-[#CBD5E1] disabled:opacity-50"
+            className="rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-body disabled:opacity-50"
           >
             <X size={14} />
           </button>
         )}
       </div>
 
-      <p className="text-[#64748B] text-xs uppercase tracking-wide leading-none">{course_name}</p>
-      <p className={cn("text-[#F8FAFC] font-semibold text-base pr-12", completed && "line-through text-[#94A3B8]")}>
+      <p className="text-muted-foreground text-xs uppercase tracking-wide leading-none pr-12">{course_name}</p>
+      <p className={cn("text-foreground font-semibold text-base pr-12", completed && "line-through text-muted-foreground")}>
         {title}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         {due_at ? (
-          <span className="text-[#94A3B8] text-xs">{dueInfo!.label}</span>
+          <span className="text-muted-foreground text-xs">{dueInfo!.label}</span>
         ) : (
-          <span className="text-[#64748B] text-xs">No due date</span>
+          <span className="text-muted-foreground text-xs">No due date</span>
         )}
         {points_possible !== null && (
-          <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-[#243044] border border-[#334155] text-[#94A3B8]">
+          <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-surface-subtle border border-border text-muted-foreground">
             {points_possible} pts
           </span>
         )}
         {completed && (
-          <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981]">
+          <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-success-soft border border-success/30 text-success">
             Completed
           </span>
         )}
         {isDueSoon && (
-          <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B]">
+          <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-warning-soft border border-warning/30 text-warning">
             Due Soon
           </span>
         )}
         {isOverdue && (
-          <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444]">
+          <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium whitespace-nowrap bg-danger-soft border border-danger/30 text-danger">
             Overdue
           </span>
         )}

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { getLocalDate, getLocalDay } from "@/lib/time";
+import { chartLabelColor } from "@/lib/chart-contrast";
 
 interface Props {
   data: Array<{ due_at: string; assignment_count: number }>;
@@ -55,9 +56,12 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
     const counts = Array.from(countMap.values());
     const maxDomain = counts.length > 0 ? Math.max(5, ...counts) : 5;
 
-    // Color scale: empty navy → heavy indigo (Midnight Sync palette)
+    // D3 interpolation requires resolved colors rather than CSS var strings.
+    const theme = getComputedStyle(svg);
+    const emptyColor = theme.getPropertyValue("--chart-empty").trim();
+    const heavyColor = theme.getPropertyValue("--chart-high").trim();
     const colorScale = d3
-      .scaleSequential(d3.interpolateRgb("#243044", "#6366F1"))
+      .scaleSequential(d3.interpolateRgb(emptyColor, heavyColor))
       .domain([0, maxDomain]);
 
     const now = new Date();
@@ -99,7 +103,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
         .attr("x", marginLeft - 8)
         .attr("y", (_, i) => marginTop + i * step + cellSize / 2 + 4)
         .attr("text-anchor", "end")
-        .attr("fill", "#64748B")
+        .attr("fill", "var(--muted-foreground)")
         .attr("font-size", "10px")
         .text((l) => l);
 
@@ -115,7 +119,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
             `translate(${marginLeft + i * step + cellSize / 2}, ${marginTop + gridH + 8}) rotate(-45)`,
         )
         .attr("text-anchor", "end")
-        .attr("fill", "#64748B")
+        .attr("fill", "var(--muted-foreground)")
         .attr("font-size", "10px")
         .text((d) => fmtShort(d));
 
@@ -133,7 +137,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
         .attr("height", cellSize)
         .attr("rx", 5)
         .attr("fill", (d) => colorScale(countMap.get(d.dateStr) ?? 0))
-        .attr("stroke", (d) => (d.dateStr === todayStr ? "#818CF8" : "#334155"))
+        .attr("stroke", (d) => (d.dateStr === todayStr ? "var(--primary-hover)" : "var(--border)"))
         .attr("stroke-width", (d) => (d.dateStr === todayStr ? 2 : 0.5));
 
       cellGroups.append("title").text((d) => {
@@ -147,7 +151,10 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
         .attr("y", (d) => marginTop + d.row * step + cellSize / 2)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "central")
-        .attr("fill", "rgba(255,255,255,0.9)")
+        .attr("fill", (d) => {
+          const fill = d3.rgb(colorScale(countMap.get(d.dateStr) ?? 0));
+          return chartLabelColor(fill.r, fill.g, fill.b);
+        })
         .attr("font-size", "13px")
         .attr("font-weight", "700")
         .attr("pointer-events", "none")
@@ -163,7 +170,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
       const legendDomain = [0, maxDomain * 0.25, maxDomain * 0.5, maxDomain * 0.75, maxDomain];
       const swatchStartX = marginLeft + 26;
 
-      svgSel.append("text").attr("x", marginLeft).attr("y", legendY + swatchSize - 1).attr("fill", "#64748B").attr("font-size", "11px").text("Low");
+      svgSel.append("text").attr("x", marginLeft).attr("y", legendY + swatchSize - 1).attr("fill", "var(--muted-foreground)").attr("font-size", "11px").text("Low");
 
       svgSel
         .selectAll<SVGRectElement, number>("rect.ls")
@@ -181,7 +188,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
         .append("text")
         .attr("x", swatchStartX + legendDomain.length * (swatchSize + swatchGap))
         .attr("y", legendY + swatchSize - 1)
-        .attr("fill", "#64748B")
+        .attr("fill", "var(--muted-foreground)")
         .attr("font-size", "11px")
         .text("High");
     }
@@ -194,14 +201,14 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
   }, [data, userTz]);
 
   return (
-    <div className="rounded-[18px] bg-[#1E293B]/80 border border-[#334155]/70 p-5 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+    <div className="rounded-sm bg-card border border-border p-5 sm:p-6 shadow-none">
       <div className="mb-4">
-        <p className="text-[#F8FAFC] font-semibold text-base">
+        <h2 className="text-foreground font-semibold text-base">
           Workload — Next 6 Weeks
-        </p>
+        </h2>
       </div>
       <div ref={wrapperRef} className="w-full max-w-85 mx-auto">
-        <svg ref={svgRef} className="w-full h-auto block" />
+        <svg ref={svgRef} className="w-full h-auto block" role="img" aria-label="Assignment workload for the next six weeks. Each cell shows the number of assignments due on that day." />
       </div>
     </div>
   );

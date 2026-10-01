@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
   if (!user) redirect("/login");
 
   return (
-    <main className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-4">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <OnboardingWizard userEmail={user?.email} />
     </main>
   );

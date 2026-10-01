@@ -3,8 +3,8 @@
   "short_name": "DuePulse",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#6366f1",
+  "background_color": "#ffffff",
+  "theme_color": "#4b1610",
   "icons": [
     {
       "src": "/icons/icon-192.png",

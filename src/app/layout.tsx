@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Lato } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const manrope = Manrope({
+const lato = Lato({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["400", "700", "900"],
+  display: "swap",
+  variable: "--font-lato",
 });
 
 export const metadata: Metadata = {
@@ -23,18 +25,18 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        <meta name="theme-color" content="#6366F1" />
+        <meta name="theme-color" content="#4B1610" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
+          content="default"
         />
       </head>
       <body
-        className={`${manrope.variable} font-sans min-h-full flex flex-col bg-[#0F172A]`}
+        className={`${lato.variable} font-sans min-h-full flex flex-col bg-background`}
       >
         {children}
-        <Toaster />
+        <Toaster theme="light" toastOptions={{ classNames: { toast: "!rounded-sm !border-border !bg-popover !text-popover-foreground", description: "!text-muted-foreground", actionButton: "!bg-primary !text-primary-foreground" } }} />
       </body>
     </html>
   );

@@ -41,7 +41,7 @@ export default function TestNotifButton() {
         disabled={sending}
         aria-busy={sending}
         onClick={handleClick}
-        className="flex items-center gap-1.5 rounded-xl border border-[#334155] bg-[#1E293B] text-[#64748B] hover:text-[#94A3B8] hover:border-[#475569] text-xs px-3 py-1.5 transition-colors"
+        className="flex items-center gap-1.5 rounded-sm border border-border bg-card text-muted-foreground hover:text-muted-foreground hover:border-input text-xs px-3 py-1.5 transition-colors"
       >
         {sending ? "Sending…" : "Test Notif"}
       </button>

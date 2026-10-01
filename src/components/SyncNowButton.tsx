@@ -44,10 +44,10 @@ export default function SyncNowButton() {
     finally { setIsSyncing(false); }
   }
 
-  if (isSyncing) return <Skeleton className="h-9 w-24 rounded-xl bg-[#243044]" />;
+  if (isSyncing) return <Skeleton className="h-9 w-24 rounded-sm bg-surface-subtle" />;
 
   return (
-    <Button onClick={handleSync} className="bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm rounded-xl shadow-[0_8px_25px_rgba(99,102,241,0.25)] h-9 px-4">
+    <Button onClick={handleSync} className="bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-sm shadow-none h-9 px-4">
       Sync Now
     </Button>
   );

@@ -52,18 +52,18 @@ const PAUSE_DURATIONS = [
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[18px] bg-[#1E293B] border border-[#334155]/70 p-5 sm:p-6">
-      <h2 className="text-[#F8FAFC] font-semibold text-base mb-4">{title}</h2>
+    <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
+      <h2 className="text-foreground font-semibold text-base mb-4">{title}</h2>
       {children}
     </section>
   );
 }
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <label className="relative inline-flex items-center cursor-pointer shrink-0">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
-      <div className="w-9 h-5 bg-[#334155] rounded-full peer peer-checked:bg-[#6366F1] transition-colors after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
+      <input type="checkbox" role="switch" aria-label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+      <div className="w-9 h-5 bg-input rounded-full peer peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-focus-visible:outline-offset-3 peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
     </label>
   );
 }
@@ -161,58 +161,61 @@ export default function SettingsForm({
     return hour >= quietStart || hour < quietEnd;
   }
 
-  const selectCls = "w-full rounded-xl bg-[#0F172A] border border-[#334155] text-[#F8FAFC] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#6366F1]";
+  const selectCls = "w-full rounded-sm bg-background border border-input text-foreground text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring";
 
   return (
     <div className="flex flex-col gap-5">
-      <form action={handleSave}>
+      <form onSubmit={(event) => {
+        event.preventDefault();
+        handleSave(new FormData(event.currentTarget));
+      }}>
         {/* Quiet Hours */}
         <Section title="Quiet Hours">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-[#94A3B8] text-sm">Block notifications during these hours</p>
-            <Toggle checked={quietEnabled} onChange={setQuietEnabled} />
+            <p className="text-muted-foreground text-sm">Block notifications during these hours</p>
+            <Toggle label="Enable quiet hours" checked={quietEnabled} onChange={setQuietEnabled} />
           </div>
           {quietEnabled && (
             <>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="text-[#64748B] text-xs font-semibold uppercase tracking-widest block mb-1.5">Start</label>
-                  <select value={quietStart} onChange={(e) => setQuietStart(Number(e.target.value))} className={selectCls}>
+                  <label htmlFor="quiet-start" className="text-muted-foreground text-xs font-semibold uppercase tracking-widest block mb-1.5">Start</label>
+                  <select id="quiet-start" value={quietStart} onChange={(e) => setQuietStart(Number(e.target.value))} className={selectCls}>
                     {HOURS.map((h) => <option key={h} value={h}>{formatHour(h)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[#64748B] text-xs font-semibold uppercase tracking-widest block mb-1.5">End</label>
-                  <select value={quietEnd} onChange={(e) => setQuietEnd(Number(e.target.value))} className={selectCls}>
+                  <label htmlFor="quiet-end" className="text-muted-foreground text-xs font-semibold uppercase tracking-widest block mb-1.5">End</label>
+                  <select id="quiet-end" value={quietEnd} onChange={(e) => setQuietEnd(Number(e.target.value))} className={selectCls}>
                     {HOURS.map((h) => <option key={h} value={h}>{formatHour(h)}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="flex h-7 rounded-lg overflow-hidden border border-[#334155]">
+              <div className="flex h-7 rounded-sm overflow-hidden border border-border">
                 {Array.from({ length: 24 }, (_, h) => (
-                  <div key={h} className={`flex-1 flex items-center justify-center text-[9px] font-medium transition-colors ${isInQuietZone(h) ? "bg-[#EF4444]/20 text-[#EF4444]" : "bg-[#6366F1]/6 text-[#64748B]"}`} title={formatHour(h)}>
+                  <div key={h} className={`flex-1 flex items-center justify-center text-[9px] font-medium transition-colors ${isInQuietZone(h) ? "bg-danger-soft text-danger" : "bg-primary-soft text-muted-foreground"}`} title={formatHour(h)}>
                     {h % 6 === 0 ? String(h) : ""}
                   </div>
                 ))}
               </div>
-              <p className="text-[#64748B] text-xs mt-2">Red = quiet — no notifications sent</p>
+              <p className="text-muted-foreground text-xs mt-2">Red = quiet — no notifications sent</p>
             </>
           )}
-          {!quietEnabled && <p className="text-[#64748B] text-sm">Notifications can be sent at any hour</p>}
+          {!quietEnabled && <p className="text-muted-foreground text-sm">Notifications can be sent at any hour</p>}
         </Section>
 
         {/* Nudge Frequency */}
         <Section title="Nudge Frequency">
           <div className="flex flex-col gap-3">
             {FREQUENCIES.map((opt) => (
-              <label key={opt.value} onClick={() => setFrequency(opt.value)} className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${frequency === opt.value ? "border-[#6366F1]/40 bg-[#6366F1]/8" : "border-[#334155] bg-[#243044]/50 hover:bg-[#243044]"}`}>
-                <input type="radio" name="nudge_frequency" value={opt.value} checked={frequency === opt.value} readOnly className="sr-only" />
-                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${frequency === opt.value ? "border-[#818CF8]" : "border-[#475569]"}`}>
-                  {frequency === opt.value && <span className="h-2 w-2 rounded-full bg-[#818CF8]" />}
+              <label key={opt.value} className={`flex items-start gap-3 rounded-sm border p-4 cursor-pointer transition-colors focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-3 ${frequency === opt.value ? "border-primary bg-primary-soft" : "border-border bg-card hover:bg-surface-subtle"}`}>
+                <input type="radio" name="nudge_frequency" aria-label={opt.label} value={opt.value} checked={frequency === opt.value} onChange={() => setFrequency(opt.value)} className="sr-only" />
+                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${frequency === opt.value ? "border-primary" : "border-input"}`}>
+                  {frequency === opt.value && <span className="h-2 w-2 rounded-full bg-primary-hover" />}
                 </span>
                 <div>
-                  <p className={`text-sm font-medium ${frequency === opt.value ? "text-[#818CF8]" : "text-[#F8FAFC]"}`}>{opt.label}</p>
-                  <p className="text-[#64748B] text-xs mt-0.5">{opt.desc}</p>
+                  <p className={`text-sm font-medium ${frequency === opt.value ? "text-primary" : "text-foreground"}`}>{opt.label}</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">{opt.desc}</p>
                 </div>
               </label>
             ))}
@@ -223,12 +226,12 @@ export default function SettingsForm({
         <Section title="Workload Alert Threshold">
           <div className="flex items-center gap-4">
             <input
-              type="number" min={1} max={20} value={threshold}
+              type="number" aria-label="Workload alert threshold" min={1} max={20} value={threshold}
               onChange={(e) => setThreshold(Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 1)))}
-              className="w-16 rounded-xl bg-[#0F172A] border border-[#334155] text-[#F8FAFC] text-center text-lg font-semibold px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
+              className="w-16 rounded-sm bg-background border border-input text-foreground text-center text-lg font-semibold px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring"
             />
-            <p className="text-[#94A3B8] text-sm">
-              Show a stress alert when <span className="text-[#F8FAFC] font-semibold">{threshold}+</span> assignments are due in the next 14 days
+            <p className="text-muted-foreground text-sm">
+              Show a stress alert when <span className="text-foreground font-semibold">{threshold}+</span> assignments are due in the next 14 days
             </p>
           </div>
         </Section>
@@ -237,7 +240,7 @@ export default function SettingsForm({
         <Section title="Timezone">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-[#94A3B8] text-sm">Used for deadline timing, quiet hours, and productive windows</p>
+              <p className="text-muted-foreground text-sm">Used for deadline timing, quiet hours, and productive windows</p>
               <button
                 type="button"
                 onClick={() => {
@@ -249,12 +252,13 @@ export default function SettingsForm({
                     }
                   }
                 }}
-                className="text-xs text-[#818CF8] hover:text-[#6366F1] font-medium transition-colors"
+                className="text-xs text-primary hover:text-primary-hover font-medium transition-colors"
               >
                 Auto-detect timezone
               </button>
             </div>
             <select
+              aria-label="Timezone"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               className={selectCls}
@@ -272,7 +276,7 @@ export default function SettingsForm({
         </Section>
 
         <div className="flex justify-end mt-5">
-          <button type="submit" disabled={isPending} className="rounded-xl bg-[#6366F1] hover:bg-[#818CF8] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-2.5 transition-colors shadow-[0_8px_25px_rgba(99,102,241,0.25)]">
+          <button type="submit" disabled={isPending} className="rounded-sm bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-2.5 transition-colors shadow-none">
             {isPending ? "Saving…" : "Save Settings"}
           </button>
         </div>
@@ -280,23 +284,23 @@ export default function SettingsForm({
 
       {/* Pause Notifications */}
       <Section title="Pause Notifications">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[#94A3B8] text-sm">Temporarily silence all nudges</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <p className="text-muted-foreground text-sm">Temporarily silence all nudges</p>
           <div className="flex items-center gap-3">
             {isPaused && (
-              <span className="text-xs text-[#818CF8] font-medium bg-[#6366F1]/10 px-2.5 py-1 rounded-full">
+              <span className="text-xs text-primary font-medium bg-primary-soft px-2.5 py-1 rounded-full">
                 {pausedRemaining}m remaining
               </span>
             )}
-            <Toggle checked={pauseEnabled} onChange={(enabled) => { setPauseEnabled(enabled); if (enabled) handlePause(activeDuration); else handlePause(0); }} />
+            <Toggle label="Pause notifications" checked={pauseEnabled} onChange={(enabled) => { setPauseEnabled(enabled); if (enabled) handlePause(activeDuration); else handlePause(0); }} />
           </div>
         </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${pauseEnabled ? "max-h-20 opacity-100" : "max-h-0 opacity-0"}`}>
           <div className="flex gap-3 pt-1">
             {PAUSE_DURATIONS.map((opt) => (
-              <button key={opt.hours} type="button" disabled={isPausing}
+              <button key={opt.hours} type="button" disabled={isPausing || !pauseEnabled}
                 onClick={() => { setActiveDuration(opt.hours); handlePause(opt.hours); }}
-                className={`flex-1 rounded-xl border text-sm font-medium px-3 py-2.5 transition-all disabled:opacity-50 ${activeDuration === opt.hours ? "border-[#6366F1]/40 bg-[#6366F1]/12 text-[#818CF8]" : "border-[#334155] text-[#64748B] bg-[#243044]/50 hover:border-[#475569] hover:text-[#94A3B8]"}`}>
+                className={`flex-1 rounded-sm border text-sm font-medium px-3 py-2.5 transition-all disabled:opacity-50 ${activeDuration === opt.hours ? "border-primary/40 bg-primary-soft text-primary" : "border-border text-muted-foreground bg-surface-subtle hover:border-input hover:text-muted-foreground"}`}>
                 {opt.label}
               </button>
             ))}

@@ -42,16 +42,16 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="flex flex-col flex-1 min-h-screen bg-[radial-gradient(circle_at_top,#111C33_0%,#0F172A_45%,#08111F_100%)] text-[#F8FAFC]">
+    <main className="flex flex-col flex-1 min-h-screen bg-background text-foreground">
       {/* ── Sticky nav ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[#334155]/60 bg-[#08111F]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-brand-gold/40 bg-sidebar text-sidebar-foreground">
         <div className="max-w-6xl mx-auto px-5 py-3 sm:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-              <Zap size={15} className="text-[#818CF8]" fill="#818CF8" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-brand-gold/40 bg-sidebar-accent shadow-none">
+              <Zap size={15} className="text-brand-gold" fill="currentColor" />
             </div>
-            <span className="font-bold text-lg text-[#F8FAFC] tracking-tight">
+            <span className="font-bold text-lg text-sidebar-foreground tracking-tight">
               DuePulse
             </span>
           </Link>
@@ -60,13 +60,13 @@ export default async function HomePage() {
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/features"
-              className="text-[#94A3B8] hover:text-[#F8FAFC] text-sm transition-colors"
+              className="text-sidebar-muted hover:text-sidebar-foreground text-sm transition-colors"
             >
               Features
             </Link>
             <Link
               href="/how-it-works"
-              className="text-[#94A3B8] hover:text-[#F8FAFC] text-sm transition-colors"
+              className="text-sidebar-muted hover:text-sidebar-foreground text-sm transition-colors"
             >
               How it works
             </Link>
@@ -75,7 +75,7 @@ export default async function HomePage() {
           {/* CTA */}
           <Button
             asChild
-            className="bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm h-9 px-4 rounded-xl shadow-[0_8px_25px_rgba(99,102,241,0.35)] transition-all duration-200"
+            className="bg-sidebar-primary hover:bg-primary-soft text-sidebar-primary-foreground font-semibold text-sm h-9 px-4 rounded-sm shadow-none transition-all duration-200"
           >
             <Link href="/login">Get Started</Link>
           </Button>
@@ -85,24 +85,24 @@ export default async function HomePage() {
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <section className="flex flex-col items-center justify-center px-5 pt-20 pb-16 text-center max-w-3xl mx-auto">
         {/* Eyebrow */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#6366F1]/40 bg-[#6366F1]/10 px-4 py-1.5 text-sm font-medium text-[#CBD5E1]">
-          <Zap size={13} className="text-[#818CF8]" />
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary-soft px-4 py-1.5 text-sm font-medium text-body">
+          <Zap size={13} className="text-primary" />
           For students, by a student
         </div>
 
-        <h1 className="text-[#F8FAFC] font-extrabold text-5xl md:text-6xl leading-[1.05] tracking-tight max-w-2xl mb-5">
+        <h1 className="text-foreground font-extrabold text-5xl md:text-6xl leading-[1.05] tracking-tight max-w-2xl mb-5">
           Your deadlines, your brain,{" "}
-          <span className="text-[#6366F1]">finally in sync.</span>
+          <span className="text-primary">finally in sync.</span>
         </h1>
 
-        <p className="text-[#CBD5E1] text-lg max-w-xl leading-relaxed mb-10">
+        <p className="text-body text-lg max-w-xl leading-relaxed mb-10">
           DuePulse connects to Canvas LMS, learns when you actually focus, and
           nudges you at exactly the right moment.
         </p>
 
         <Button
           asChild
-          className="bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold px-7 py-3 text-base h-auto rounded-xl shadow-[0_12px_35px_rgba(99,102,241,0.35)] transition-all duration-200 hover:scale-[1.02]"
+          className="bg-primary hover:bg-primary-hover text-white font-semibold px-7 py-3 text-base h-auto rounded-sm shadow-none transition-all duration-200 "
         >
           <Link href="/login">Connect Your Canvas →</Link>
         </Button>
@@ -114,23 +114,23 @@ export default async function HomePage() {
           {features.map(({ icon: Icon, title, body }) => (
             <div
               key={title}
-              className="rounded-[18px] bg-[#1E293B]/80 border border-[#334155]/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:border-[#6366F1]/40 hover:bg-[#243044]/80 transition-all duration-200"
+              className="rounded-sm bg-card border border-border p-6 shadow-none hover:border-primary/40 hover:bg-surface-subtle transition-all duration-200"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center mb-4">
-                <Icon className="text-[#818CF8]" size={18} />
+              <div className="w-10 h-10 rounded-sm bg-primary-soft border border-primary/20 flex items-center justify-center mb-4">
+                <Icon className="text-primary" size={18} />
               </div>
-              <h2 className="text-[#F8FAFC] font-semibold text-base mb-2">
+              <h2 className="text-foreground font-semibold text-base mb-2">
                 {title}
               </h2>
-              <p className="text-[#94A3B8] text-sm leading-relaxed">{body}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">{body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <footer className="py-8 text-center border-t border-[#334155]/40 mt-auto">
-        <p className="text-[#94A3B8] text-sm">
-          <Link href="/" className="text-[#6366F1] hover:text-[#818CF8] transition-colors">
+      <footer className="py-8 text-center border-t border-border mt-auto">
+        <p className="text-muted-foreground text-sm">
+          <Link href="/" className="text-primary hover:text-primary-hover transition-colors">
             DuePulse
           </Link>{" "}
           — Built for students, by a student.

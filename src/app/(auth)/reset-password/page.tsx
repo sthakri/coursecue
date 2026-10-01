@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import AuthBrandPanel from "@/components/AuthBrandPanel";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -73,58 +74,34 @@ export default function ResetPasswordPage() {
   }
 
   const inputCls =
-    "rounded-xl border-[#334155] bg-[#0F172A] text-[#F8FAFC] placeholder:text-[#64748B] focus-visible:ring-[#6366F1] focus-visible:border-[#6366F1]/60 h-11";
+    "rounded-sm border-border bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:border-primary/60 h-11";
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex">
-      {/* ── Left decorative panel ─────────────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-[420px] xl:w-[480px] shrink-0 flex-col relative overflow-hidden bg-[#0B1120] border-r border-[#334155]/70">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#6366F1]/8 via-transparent to-[#08111F]/60" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            <div className="w-48 h-64 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-2xl transform -rotate-6 absolute -left-6 top-4 opacity-30" />
-            <div className="w-48 h-64 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-2xl transform -rotate-2 absolute -left-2 top-2 opacity-60" />
-            <div className="w-48 h-64 rounded-2xl bg-[#243044] border border-[#6366F1]/20 shadow-2xl flex flex-col items-center justify-center gap-5 p-8">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15 shadow-[0_0_25px_rgba(99,102,241,0.25)]">
-                <Zap size={18} className="text-[#818CF8]" fill="#818CF8" />
-              </div>
-              <div className="text-center space-y-3">
-                <p className="text-[#818CF8] font-bold text-sm tracking-[0.2em] uppercase">Focus</p>
-                <div className="w-8 h-px bg-[#334155] mx-auto" />
-                <p className="text-[#818CF8] font-bold text-sm tracking-[0.2em] uppercase">Consistency</p>
-                <div className="w-8 h-px bg-[#334155] mx-auto" />
-                <p className="text-[#818CF8] font-bold text-sm tracking-[0.2em] uppercase">Progress</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-10 left-0 right-0 text-center px-8">
-          <p className="text-[#64748B] text-xs">DuePulse — Built for students, by a student.</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background flex">
+      <AuthBrandPanel />
 
       {/* ── Right form panel ──────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-              <Zap size={14} className="text-[#818CF8]" fill="#818CF8" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft shadow-none">
+              <Zap size={14} className="text-primary" fill="currentColor" />
             </div>
-            <span className="font-bold text-lg text-[#F8FAFC] tracking-tight">DuePulse</span>
+            <span className="font-bold text-lg text-foreground tracking-tight">DuePulse</span>
           </Link>
         </div>
 
         <div className="w-full max-w-sm">
           <div className="mb-8">
-            <h1 className="text-[#F8FAFC] font-bold text-2xl mb-1">Reset your password</h1>
-            <p className="text-[#94A3B8] text-sm">
+            <h1 className="text-foreground font-bold text-2xl mb-1">Reset your password</h1>
+            <p className="text-muted-foreground text-sm">
               We emailed you a reset code. Enter it below, then choose a new password.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-[#CBD5E1] text-sm font-medium">Email</Label>
+              <Label htmlFor="email" className="text-body text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -138,7 +115,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="code" className="text-[#CBD5E1] text-sm font-medium">Reset code</Label>
+              <Label htmlFor="code" className="text-body text-sm font-medium">Reset code</Label>
               <Input
                 id="code"
                 type="text"
@@ -155,7 +132,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-[#CBD5E1] text-sm font-medium">New password</Label>
+              <Label htmlFor="password" className="text-body text-sm font-medium">New password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -170,7 +147,8 @@ export default function ResetPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#94A3B8] transition-colors bg-transparent"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground transition-colors bg-transparent"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -178,7 +156,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="confirm-password" className="text-[#CBD5E1] text-sm font-medium">Confirm password</Label>
+              <Label htmlFor="confirm-password" className="text-body text-sm font-medium">Confirm password</Label>
               <Input
                 id="confirm-password"
                 type={showPassword ? "text" : "password"}
@@ -192,7 +170,7 @@ export default function ResetPasswordPage() {
             </div>
 
             {error && (
-              <p className="text-[#EF4444] text-sm bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl px-4 py-3">
+              <p className="text-danger text-sm bg-danger-soft border border-danger/20 rounded-sm px-4 py-3">
                 {error}
               </p>
             )}
@@ -200,14 +178,14 @@ export default function ResetPasswordPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold shadow-[0_8px_25px_rgba(99,102,241,0.3)] transition-all duration-200 hover:scale-[1.01] disabled:opacity-60"
+              className="w-full h-11 rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold shadow-none transition-all duration-200  disabled:opacity-60"
             >
               {loading ? "Please wait…" : "Verify code & update password"}
             </Button>
           </form>
 
           <div className="text-center mt-6">
-            <Link href="/login" className="text-[#64748B] hover:text-[#94A3B8] text-sm transition-colors">
+            <Link href="/login" className="text-muted-foreground hover:text-muted-foreground text-sm transition-colors">
               ← Back to sign in
             </Link>
           </div>

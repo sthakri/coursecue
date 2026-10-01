@@ -51,14 +51,14 @@ export default function InstallPage() {
 
   if (alreadyInstalled) {
     return (
-      <main className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center px-4 text-[#F8FAFC]">
-        <div className="w-16 h-16 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center mb-4">
-          <CheckCircle className="text-[#10B981] w-8 h-8" />
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-foreground">
+        <div className="w-16 h-16 rounded-sm bg-success-soft border border-success/20 flex items-center justify-center mb-4">
+          <CheckCircle className="text-success w-8 h-8" />
         </div>
-        <h1 className="text-[#F8FAFC] font-bold text-2xl mb-2">You&apos;re already installed</h1>
-        <p className="text-[#94A3B8] text-sm mb-6 max-w-xs text-center">DuePulse is running as a Home Screen app on this device.</p>
+        <h1 className="text-foreground font-bold text-2xl mb-2">You&apos;re already installed</h1>
+        <p className="text-muted-foreground text-sm mb-6 max-w-xs text-center">DuePulse is running as a Home Screen app on this device.</p>
         <button onClick={handleBypass}
-          className="bg-[#6366F1] hover:bg-[#818CF8] text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors">
+          className="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-6 py-3 rounded-sm transition-colors">
           Open Dashboard
         </button>
       </main>
@@ -68,22 +68,22 @@ export default function InstallPage() {
   const steps = platform === "ios" ? iosSteps : androidSteps;
 
   return (
-    <main className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-start px-4 pt-14 pb-10 text-[#F8FAFC]">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-start px-4 pt-14 pb-10 text-foreground">
       {/* Logo + headline */}
       <div className="flex flex-col items-center text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center mb-4">
-          <Smartphone className="text-[#818CF8] w-8 h-8" />
+        <div className="w-16 h-16 rounded-sm bg-primary-soft border border-primary/20 flex items-center justify-center mb-4">
+          <Smartphone className="text-primary w-8 h-8" />
         </div>
         <div className="flex items-center gap-2 mb-3">
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-[#6366F1]/40 bg-[#6366F1]/15">
-            <Zap size={11} className="text-[#818CF8]" fill="#818CF8" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
+            <Zap size={11} className="text-primary" fill="currentColor" />
           </div>
-          <span className="font-bold text-[#F8FAFC] text-sm tracking-tight">DuePulse</span>
+          <span className="font-bold text-foreground text-sm tracking-tight">DuePulse</span>
         </div>
-        <h1 className="text-[#F8FAFC] font-bold text-2xl leading-tight max-w-xs">
+        <h1 className="text-foreground font-bold text-2xl leading-tight max-w-xs">
           Add DuePulse to Your Home Screen
         </h1>
-        <p className="text-[#94A3B8] text-sm mt-3 max-w-xs leading-relaxed">
+        <p className="text-muted-foreground text-sm mt-3 max-w-xs leading-relaxed">
           {platform === "ios"
             ? "Push notifications and the full app experience only work when DuePulse is installed as a standalone app."
             : "Push notifications work straight from Chrome — installing to your Home Screen just makes DuePulse feel like a native app."}
@@ -91,42 +91,42 @@ export default function InstallPage() {
       </div>
 
       {/* Platform toggle */}
-      <div className="flex items-center gap-1 bg-[#1E293B] border border-[#334155]/70 rounded-xl p-1 mb-6 w-full max-w-xs">
+      <div className="flex items-center gap-1 bg-card border border-border rounded-sm p-1 mb-6 w-full max-w-xs">
         {(["ios", "android"] as Platform[]).map((p) => (
           <button key={p} onClick={() => setPlatform(p)} aria-pressed={platform === p}
-            className={`flex-1 py-2 rounded-[10px] text-sm font-medium transition-all ${platform === p ? "bg-[#6366F1] text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]" : "text-[#64748B] hover:text-[#94A3B8]"}`}>
+            className={`flex-1 py-2 rounded-sm text-sm font-medium transition-all ${platform === p ? "bg-primary text-white shadow-none" : "text-muted-foreground hover:text-muted-foreground"}`}>
             {p === "ios" ? "iOS (Safari)" : "Android (Chrome)"}
           </button>
         ))}
       </div>
 
       {/* Steps card */}
-      <div className="w-full max-w-xs rounded-[18px] bg-[#1E293B] border border-[#334155]/70 p-5 mb-5">
-        <p className="text-[#64748B] text-xs font-semibold uppercase tracking-wider mb-4">How to install</p>
+      <div className="w-full max-w-xs rounded-sm bg-card border border-border p-5 mb-5">
+        <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-4">How to install</p>
         <div className="space-y-4">
           {steps.map((step, i) => (
             <div key={i} className="flex items-start gap-3">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#243044] border border-[#334155] text-[#94A3B8] text-[11px] font-bold shrink-0 mt-0.5">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-subtle border border-border text-muted-foreground text-[11px] font-bold shrink-0 mt-0.5">
                 {i + 1}
               </span>
               <div className="flex items-center gap-2 min-w-0">
-                <step.icon className="text-[#818CF8] w-4 h-4 shrink-0" />
-                <p className="text-[#94A3B8] text-sm leading-snug">{step.label}</p>
+                <step.icon className="text-primary w-4 h-4 shrink-0" />
+                <p className="text-muted-foreground text-sm leading-snug">{step.label}</p>
               </div>
             </div>
           ))}
         </div>
         {platform === "ios" && (
-          <p className="text-[#64748B] text-xs leading-relaxed mt-4 pt-4 border-t border-[#334155]/70">
+          <p className="text-muted-foreground text-xs leading-relaxed mt-4 pt-4 border-t border-border">
             Web push requires iOS 16.4 or later.
           </p>
         )}
       </div>
 
       {/* Why it matters */}
-      <div className="w-full max-w-xs rounded-[18px] bg-[#6366F1]/6 border border-[#6366F1]/20 p-4 mb-8">
-        <p className="text-[#818CF8] text-sm font-semibold mb-1">Why does this matter?</p>
-        <p className="text-[#94A3B8] text-sm leading-relaxed">
+      <div className="w-full max-w-xs rounded-sm bg-primary-soft border border-primary/20 p-4 mb-8">
+        <p className="text-primary text-sm font-semibold mb-1">Why does this matter?</p>
+        <p className="text-muted-foreground text-sm leading-relaxed">
           {platform === "ios"
             ? "DuePulse\u2019s core feature is nudging you at the right time. Browser tabs can\u2019t deliver background push notifications \u2014 the Home Screen app can."
             : "DuePulse\u2019s core feature is nudging you at the right time. Chrome already delivers them \u2014 the Home Screen app just makes DuePulse feel native."}
@@ -135,9 +135,9 @@ export default function InstallPage() {
 
       {/* Bypass */}
       <div className="w-full max-w-xs flex flex-col items-center gap-3">
-        <p className="text-[#64748B] text-xs text-center">Already added it? Open DuePulse from your Home Screen icon instead.</p>
+        <p className="text-muted-foreground text-xs text-center">Already added it? Open DuePulse from your Home Screen icon instead.</p>
         <button onClick={handleBypass}
-          className="text-[#64748B] hover:text-[#94A3B8] hover:bg-[#1E293B] text-sm w-full py-2.5 rounded-xl transition-colors bg-transparent border border-[#334155]">
+          className="text-muted-foreground hover:text-muted-foreground hover:bg-card text-sm w-full py-2.5 rounded-sm transition-colors bg-transparent border border-border">
           Continue to Dashboard Anyway
         </button>
       </div>

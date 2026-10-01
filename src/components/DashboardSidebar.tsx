@@ -49,16 +49,17 @@ function NavItems({
             key={href}
             href={href}
             onClick={onClick}
+            aria-current={active ? "page" : undefined}
             className={[
-              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+              "flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-all duration-150",
               collapsed ? "justify-center" : "",
               active
-                ? "border border-[#6366F1]/30 bg-[#6366F1]/12 text-[#818CF8]"
-                : "text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#CBD5E1] border border-transparent",
+                ? "border border-transparent bg-sidebar-primary text-sidebar-primary-foreground"
+                : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground border border-transparent",
             ].join(" ")}
             title={collapsed ? label : undefined}
           >
-            <Icon size={17} className={active ? "text-[#818CF8]" : ""} />
+            <Icon size={17} className={active ? "text-primary" : ""} />
             {!collapsed && <span>{label}</span>}
           </Link>
         );
@@ -108,7 +109,7 @@ export default function DashboardSidebar({
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3.5 left-4 z-50 w-8 h-8 rounded-lg bg-[#1E293B] border border-[#334155] flex items-center justify-center text-[#94A3B8] hover:text-[#F8FAFC]"
+        className="lg:hidden fixed top-3.5 left-4 z-50 w-8 h-8 rounded-sm bg-card border border-border flex items-center justify-center text-foreground hover:text-primary-hover"
         aria-label="Open menu"
       >
         <Menu size={16} />
@@ -118,37 +119,37 @@ export default function DashboardSidebar({
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
-            className="absolute inset-0 bg-[#0F172A]/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-overlay/55"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative w-64 bg-[#0B1120] border-r border-[#334155]/70 flex flex-col h-full shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-5 border-b border-[#334155]/70">
+          <aside className="relative w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-full shadow-lg">
+            <div className="flex items-center justify-between px-5 py-5 border-b border-sidebar-border">
               <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15">
-                  <Zap size={14} className="text-[#818CF8]" fill="#818CF8" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
+                  <Zap size={14} className="text-primary" fill="currentColor" />
                 </div>
-                <span className="font-bold text-[#F8FAFC] tracking-tight">DuePulse</span>
+                <span className="font-bold text-sidebar-foreground tracking-tight">DuePulse</span>
               </Link>
-              <button type="button" onClick={() => setMobileOpen(false)} className="text-[#64748B] hover:text-[#94A3B8] bg-transparent">
+              <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu" className="text-sidebar-muted hover:text-sidebar-muted bg-transparent">
                 <X size={18} />
               </button>
             </div>
             <NavItems pathname={pathname} collapsed={false} onClick={() => setMobileOpen(false)} />
-            <div className="border-t border-[#334155]/70">
+            <div className="border-t border-sidebar-border">
               {email && initial && (
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#334155]/40">
-                  <div className="w-7 h-7 rounded-full bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#818CF8] font-semibold text-xs shrink-0">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-sidebar-border">
+                  <div className="w-7 h-7 rounded-full bg-primary-soft border border-primary/30 flex items-center justify-center text-primary font-semibold text-xs shrink-0">
                     {initial}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[#F8FAFC] text-xs font-medium truncate">{email.split("@")[0]}</p>
-                    <p className="text-[#64748B] text-[11px] truncate">{email}</p>
+                    <p className="text-sidebar-foreground text-xs font-medium truncate">{email.split("@")[0]}</p>
+                    <p className="text-sidebar-muted text-[11px] truncate">{email}</p>
                   </div>
                 </div>
               )}
               <div className="p-3">
                 <button type="button" onClick={() => { setMobileOpen(false); setShowSignOutConfirm(true); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#EF4444] transition-colors bg-transparent border border-transparent">
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors bg-transparent border border-transparent">
                   <LogOut size={17} />
                   <span>Sign out</span>
                 </button>
@@ -161,29 +162,29 @@ export default function DashboardSidebar({
       {/* ── Desktop sidebar ──────────────────────────────────────────────── */}
       <aside
         className={[
-          "hidden lg:flex flex-col shrink-0 border-r border-[#334155]/70 bg-[#0B1120] min-h-screen sticky top-0 h-screen transition-all duration-200",
-          collapsed ? "w-16" : "w-56",
+          "hidden lg:flex flex-col shrink-0 border-r border-sidebar-border bg-sidebar min-h-screen sticky top-0 h-screen transition-all duration-200",
+          collapsed ? "w-16" : "w-48",
         ].join(" ")}
       >
         {/* Logo */}
-        <div className={`flex items-center border-b border-[#334155]/70 ${collapsed ? "justify-center px-2 py-5" : "px-5 py-5 justify-between"}`}>
+        <div className={`flex items-center border-b border-sidebar-border ${collapsed ? "justify-center px-2 py-5" : "px-5 py-5 justify-between"}`}>
           {!collapsed && (
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                <Zap size={14} className="text-[#818CF8]" fill="#818CF8" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft shadow-none">
+                <Zap size={14} className="text-primary" fill="currentColor" />
               </div>
-              <span className="font-bold text-[#F8FAFC] tracking-tight">DuePulse</span>
+              <span className="font-bold text-sidebar-foreground tracking-tight">DuePulse</span>
             </Link>
           )}
           {collapsed && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15">
-              <Zap size={14} className="text-[#818CF8]" fill="#818CF8" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
+              <Zap size={14} className="text-primary" fill="currentColor" />
             </div>
           )}
           <button
             type="button"
             onClick={toggleCollapse}
-            className={`text-[#64748B] hover:text-[#94A3B8] bg-transparent transition-colors ${collapsed ? "hidden" : ""}`}
+            className={`text-sidebar-muted hover:text-sidebar-muted bg-transparent transition-colors ${collapsed ? "hidden" : ""}`}
             aria-label="Collapse sidebar"
           >
             <ChevronLeft size={16} />
@@ -194,7 +195,7 @@ export default function DashboardSidebar({
           <button
             type="button"
             onClick={toggleCollapse}
-            className="w-full flex items-center justify-center py-2 text-[#64748B] hover:text-[#94A3B8] bg-transparent transition-colors"
+            className="w-full flex items-center justify-center py-2 text-sidebar-muted hover:text-sidebar-muted bg-transparent transition-colors"
             aria-label="Expand sidebar"
           >
             <ChevronRight size={14} />
@@ -204,15 +205,15 @@ export default function DashboardSidebar({
         <NavItems pathname={pathname} collapsed={collapsed} />
 
         {/* User info + sign out */}
-        <div className="border-t border-[#334155]/70">
+        <div className="border-t border-sidebar-border">
           {email && initial && !collapsed && (
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-[#334155]/40">
-              <div className="w-7 h-7 rounded-full bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#818CF8] font-semibold text-xs shrink-0">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-sidebar-border">
+              <div className="w-7 h-7 rounded-full bg-primary-soft border border-primary/30 flex items-center justify-center text-primary font-semibold text-xs shrink-0">
                 {initial}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[#F8FAFC] text-xs font-medium truncate">{email.split("@")[0]}</p>
-                <p className="text-[#64748B] text-[11px] truncate">{email}</p>
+                <p className="text-sidebar-foreground text-xs font-medium truncate">{email.split("@")[0]}</p>
+                <p className="text-sidebar-muted text-[11px] truncate">{email}</p>
               </div>
             </div>
           )}
@@ -221,7 +222,7 @@ export default function DashboardSidebar({
               type="button"
               onClick={() => setShowSignOutConfirm(true)}
               className={[
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#64748B] hover:bg-[#1E293B] hover:text-[#EF4444] transition-colors bg-transparent border border-transparent",
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors bg-transparent border border-transparent",
                 collapsed ? "justify-center" : "",
               ].join(" ")}
               title={collapsed ? "Sign out" : undefined}
@@ -235,17 +236,17 @@ export default function DashboardSidebar({
       {/* Sign-out confirmation modal */}
       {showSignOutConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0F172A]/70 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
-          <div className="relative w-full max-w-sm rounded-[18px] bg-[#1E293B] border border-[#334155]/70 p-6 shadow-2xl">
-            <h3 className="text-[#F8FAFC] font-semibold text-base mb-2">Sign out</h3>
-            <p className="text-[#94A3B8] text-sm mb-6">Are you sure you want to sign out? You can sign back in anytime.</p>
+          <div className="absolute inset-0 bg-overlay/55" onClick={() => setShowSignOutConfirm(false)} />
+          <div className="relative w-full max-w-sm rounded-md bg-card border border-border p-6 shadow-lg">
+            <h3 className="text-foreground font-semibold text-base mb-2">Sign out</h3>
+            <p className="text-muted-foreground text-sm mb-6">Are you sure you want to sign out? You can sign back in anytime.</p>
             <div className="flex items-center gap-3 justify-end">
               <button type="button" onClick={() => setShowSignOutConfirm(false)}
-                className="rounded-xl border border-[#334155] bg-[#0F172A] text-[#94A3B8] hover:text-[#F8FAFC] text-sm font-medium px-4 py-2 transition-colors">
+                className="rounded-sm border border-border bg-background text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2 transition-colors">
                 Cancel
               </button>
               <button type="button" onClick={handleSignOut}
-                className="rounded-xl bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm font-medium px-4 py-2 transition-colors">
+                className="rounded-sm bg-danger hover:bg-danger-hover text-white text-sm font-medium px-4 py-2 transition-colors">
                 Sign out
               </button>
             </div>

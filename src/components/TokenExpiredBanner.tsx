@@ -12,26 +12,26 @@ export default function TokenExpiredBanner() {
   if (!tokenExpired || dismissed) return null;
 
   return (
-    <div className="border-b border-[#EF4444]/30 bg-[#EF4444]/10 px-5 py-3">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+    <div className="border-b border-danger/30 bg-danger-soft pl-14 pr-5 py-3 lg:pl-5">
+      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2.5 text-sm">
-          <AlertCircle size={16} className="shrink-0 text-[#EF4444]" />
-          <p className="text-[#F8FAFC]">
-            <span className="font-semibold text-[#EF4444]">Canvas connection issue.</span>{" "}
-            <span className="text-[#CBD5E1]">Your Canvas token is invalid or expired — reconnect your account to resume syncing.</span>
+          <AlertCircle size={16} className="shrink-0 text-danger" />
+          <p className="text-foreground">
+            <span className="font-semibold text-danger">Canvas connection issue.</span>{" "}
+            <span className="text-body">Your Canvas token is invalid or expired — reconnect your account to resume syncing.</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <Link
             href="/onboarding"
-            className="rounded-lg bg-[#EF4444] px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-[#DC2626]"
+            className="rounded-sm bg-danger px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-danger-hover"
           >
             Reconnect
           </Link>
           <button
             onClick={() => setDismissed(true)}
             aria-label="Dismiss banner"
-            className="text-[#94A3B8] transition hover:text-[#CBD5E1]"
+            className="text-muted-foreground transition hover:text-body"
           >
             <X size={16} />
           </button>

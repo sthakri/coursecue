@@ -58,17 +58,18 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <header className="border-b border-[#334155]/70 bg-[#0F172A] sticky top-0 z-30 h-[57px]">
-        <div className="pl-14 lg:pl-0 px-5 h-full flex items-center justify-between gap-4 max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
+      <header className="border-b border-border bg-background sticky top-0 z-30 min-h-[57px]">
+        <div className="pl-14 lg:pl-5 pr-5 py-3 flex flex-wrap items-center justify-between gap-3 max-w-7xl mx-auto">
+          <div className="flex items-center gap-3">
+            <h1 className="text-foreground text-base font-bold">Dashboard</h1>
             {lastSynced && (
-              <span className="hidden sm:flex items-center gap-1.5 text-[#64748B] text-xs">
+              <span className="hidden sm:flex items-center gap-1.5 text-muted-foreground text-xs">
                 <RefreshCw size={11} />
                 Last sync: {lastSynced}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <PushNotificationButton userId={userId} />
             {hasCanvas && <SyncNowButton />}
           </div>
@@ -77,6 +78,10 @@ export default async function DashboardPage() {
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-7xl w-full mx-auto">
         <MobileInstallGuide />
+        <div className="mb-6 border-b border-border pb-4">
+          <h2 className="text-2xl font-bold text-foreground">Your coursework at a glance</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Plan ahead with your Canvas deadlines and weekly workload.</p>
+        </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
           {/* Heatmap */}
           <div className="xl:col-span-2">
@@ -85,47 +90,47 @@ export default async function DashboardPage() {
 
           {/* Stats */}
           <div className="xl:col-span-1 flex flex-col gap-4">
-            <div className="rounded-[18px] bg-[#1E293B]/80 border border-[#334155]/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-              <p className="text-[#64748B] text-xs font-semibold uppercase tracking-widest mb-6">Overview</p>
+            <div className="rounded-sm bg-card border border-border p-6 shadow-none">
+              <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-6">Overview</p>
               <div className="flex flex-col gap-5">
                 <Link href="/dashboard/assignments" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-[#243044] border border-[#334155] flex items-center justify-center shrink-0">
-                    <BookOpen size={17} className="text-[#94A3B8]" />
+                  <div className="w-10 h-10 rounded-sm bg-surface-subtle border border-border flex items-center justify-center shrink-0">
+                    <BookOpen size={17} className="text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-[#F8FAFC] font-bold text-3xl leading-none group-hover:text-[#818CF8] transition-colors">{totalCount}</p>
-                    <p className="text-[#64748B] text-sm mt-1">Open assignments</p>
+                    <p className="text-foreground font-bold text-3xl leading-none group-hover:text-primary-hover transition-colors">{totalCount}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Open assignments</p>
                   </div>
                 </Link>
-                <div className="h-px bg-[#334155]/70" />
+                <div className="h-px bg-muted" />
                 <Link href="/dashboard/assignments?filter=overdue" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center justify-center shrink-0">
-                    <AlertTriangle size={17} className="text-[#EF4444]" />
+                  <div className="w-10 h-10 rounded-sm bg-danger-soft border border-danger/20 flex items-center justify-center shrink-0">
+                    <AlertTriangle size={17} className="text-danger" />
                   </div>
                   <div>
-                    <p className="text-[#EF4444] font-bold text-3xl leading-none">{overdueCount}</p>
-                    <p className="text-[#64748B] text-sm mt-1">Overdue</p>
+                    <p className="text-danger font-bold text-3xl leading-none">{overdueCount}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Overdue</p>
                   </div>
                 </Link>
-                <div className="h-px bg-[#334155]/70" />
+                <div className="h-px bg-muted" />
                 <Link href="/dashboard/assignments?filter=this-week" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-center justify-center shrink-0">
-                    <CalendarClock size={17} className="text-[#F59E0B]" />
+                  <div className="w-10 h-10 rounded-sm bg-warning-soft border border-warning/20 flex items-center justify-center shrink-0">
+                    <CalendarClock size={17} className="text-warning" />
                   </div>
                   <div>
-                    <p className="text-[#F59E0B] font-bold text-3xl leading-none">{dueThisWeekCount}</p>
-                    <p className="text-[#64748B] text-sm mt-1">Due this week</p>
+                    <p className="text-warning font-bold text-3xl leading-none">{dueThisWeekCount}</p>
+                    <p className="text-muted-foreground text-sm mt-1">Due this week</p>
                   </div>
                 </Link>
               </div>
             </div>
 
-            <Link href="/dashboard/insights" className="rounded-[18px] bg-[#1E293B]/80 border border-[#334155]/70 p-5 flex items-center justify-between group hover:border-[#6366F1]/40 hover:bg-[#243044]/80 transition-all">
+            <Link href="/dashboard/insights" className="rounded-sm bg-card border border-border p-5 flex items-center justify-between group hover:border-primary/40 hover:bg-surface-subtle transition-all">
               <div>
-                <p className="text-[#F8FAFC] font-semibold text-sm">Your Focus Insights</p>
-                <p className="text-[#64748B] text-xs mt-0.5">See your productive patterns</p>
+                <p className="text-foreground font-semibold text-sm">Your Focus Insights</p>
+                <p className="text-muted-foreground text-xs mt-0.5">See your productive patterns</p>
               </div>
-              <span className="text-[#818CF8] text-lg group-hover:translate-x-1 transition-transform">→</span>
+              <span className="text-primary text-lg group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>

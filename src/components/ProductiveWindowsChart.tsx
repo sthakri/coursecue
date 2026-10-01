@@ -71,7 +71,7 @@ export default function ProductiveWindowsChart({ data, userTz }: Props) {
       .attr("y", 0)
       .attr("width", xScale.bandwidth())
       .attr("height", innerHeight)
-      .attr("fill", "rgba(36, 48, 68, 0.4)")
+      .attr("fill", "var(--chart-empty)")
       .attr("rx", 2);
 
     // Active bars
@@ -84,7 +84,7 @@ export default function ProductiveWindowsChart({ data, userTz }: Props) {
       .attr("y", (d) => yScale(d.score))
       .attr("width", xScale.bandwidth())
       .attr("height", (d) => Math.max(innerHeight - yScale(d.score), d.score > 0 ? 2 : 0))
-      .attr("fill", (d) => (d.hour === peakHour ? "#818CF8" : "#6366F1"))
+      .attr("fill", (d) => (d.hour === peakHour ? "var(--primary-hover)" : "var(--primary)"))
       .attr("opacity", (d) => (d.hour === peakHour ? 1 : d.score > 0 ? 0.75 : 0.1))
       .attr("rx", 2)
       .append("title")
@@ -98,7 +98,7 @@ export default function ProductiveWindowsChart({ data, userTz }: Props) {
         .attr("x", x)
         .attr("y", innerHeight + 16)
         .attr("text-anchor", "middle")
-        .attr("fill", "#64748B")
+        .attr("fill", "var(--muted-foreground)")
         .attr("font-size", "10px")
         .attr("font-family", "inherit")
         .text(`${h}h`);
@@ -106,26 +106,26 @@ export default function ProductiveWindowsChart({ data, userTz }: Props) {
   }, [hourlyScores, maxScore, peakHour, userTz]);
 
   return (
-    <div className="rounded-[18px] bg-[#1E293B] border border-[#334155]/70 p-5 flex flex-col justify-between">
+    <div className="rounded-sm bg-card border border-border p-5 flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-[#F8FAFC] font-semibold text-sm flex items-center gap-1.5">
+          <h2 className="text-foreground font-semibold text-sm flex items-center gap-1.5">
             <span>{peakHour !== null ? hourEmoji(peakHour) : "⏰"}</span> Best Time to Review
-          </h3>
+          </h2>
           {peakHour !== null && (
-            <span className="text-[#818CF8] text-xs font-semibold bg-[#6366F1]/10 border border-[#6366F1]/20 px-2 py-0.5 rounded-full">
+            <span className="text-primary text-xs font-semibold bg-primary-soft border border-primary/20 px-2 py-0.5 rounded-full">
               Peak: {formatLocalHour(peakHour, userTz)}
             </span>
           )}
         </div>
-        <p className="text-[#64748B] text-xs mb-3">24-hour activity distribution (D3 Chart)</p>
+        <p className="text-muted-foreground text-xs mb-3">Your activity across the day</p>
       </div>
 
       <div className="w-full my-2">
-        <svg ref={svgRef} className="w-full h-32 overflow-visible" />
+        <svg ref={svgRef} className="w-full h-32 overflow-visible" role="img" aria-label={peakHour !== null ? `Activity by hour. Your busiest hour is ${formatLocalHour(peakHour, userTz)}.` : "Activity by hour. No activity recorded yet."} />
       </div>
 
-      <p className="text-[#64748B] text-[11px] mt-1">
+      <p className="text-muted-foreground text-[11px] mt-1">
         {peakHour !== null
           ? `You are most active around ${formatLocalHour(peakHour, userTz)}.`
           : "Activity records automatically while you use the dashboard."}

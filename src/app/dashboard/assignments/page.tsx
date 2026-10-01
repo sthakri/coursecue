@@ -55,12 +55,12 @@ export default async function AssignmentsPage() {
 
   return (
     <>
-      <header className="border-b border-[#334155]/70 bg-[#0F172A] sticky top-0 z-30 h-[57px]">
+      <header className="border-b border-border bg-background sticky top-0 z-30 h-[57px]">
         <div className="pl-14 lg:pl-0 px-5 h-full flex items-center justify-between gap-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
-            <h1 className="text-[#F8FAFC] font-semibold text-base">Assignments</h1>
+            <h1 className="text-foreground font-semibold text-base">Assignments</h1>
             {lastSynced && (
-              <span className="hidden sm:flex items-center gap-1.5 text-[#64748B] text-xs">
+              <span className="hidden sm:flex items-center gap-1.5 text-muted-foreground text-xs">
                 <RefreshCw size={11} />
                 Last sync: {lastSynced}
               </span>

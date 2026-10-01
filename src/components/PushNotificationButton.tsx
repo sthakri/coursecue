@@ -59,10 +59,10 @@ export default function PushNotificationButton({ userId }: { userId: string }) {
     } finally { requesting.current = false; }
   }
 
-  if (state === "unsupported") return <div role="status" className="text-[#94A3B8] text-xs">Notifications unavailable in this browser</div>;
-  if (state === "denied") return <div role="status" className="text-[#94A3B8] text-xs">Notifications blocked — enable in device settings</div>;
+  if (state === "unsupported") return <div role="status" className="text-muted-foreground text-xs">Notifications unavailable in this browser</div>;
+  if (state === "denied") return <div role="status" className="text-muted-foreground text-xs">Notifications blocked — enable in device settings</div>;
   if (state === "subscribed") return (
-    <span role="status" className="flex items-center gap-1.5 text-[#10B981] text-sm font-medium">
+    <span role="status" className="flex items-center gap-1.5 text-success text-sm font-medium">
       <CheckCircle size={15} aria-hidden="true" /> Nudges enabled
     </span>
   );
@@ -73,7 +73,7 @@ export default function PushNotificationButton({ userId }: { userId: string }) {
       type="button"
       disabled={busy}
       aria-busy={busy}
-      className="bg-[#1E293B] hover:bg-[#243044] border border-[#334155] text-[#94A3B8] hover:text-[#F8FAFC] rounded-xl h-9 shadow-none text-sm font-medium"
+      className="bg-card hover:bg-surface-subtle border border-border text-muted-foreground hover:text-foreground rounded-sm h-9 shadow-none text-sm font-medium"
       onClick={handleClick}
     >
       {busy && <Loader2 size={14} className="animate-spin" aria-hidden="true" />}

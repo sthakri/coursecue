@@ -98,21 +98,21 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
     router.push("/dashboard");
   }
 
-  const inputCls = "w-full rounded-xl bg-[#0F172A] border border-[#334155] text-[#F8FAFC] placeholder:text-[#64748B] text-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#6366F1] min-h-11";
+  const inputCls = "w-full rounded-sm bg-background border border-input text-foreground placeholder:text-muted-foreground text-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-ring min-h-11";
 
   return (
-    <div className="w-full max-w-md bg-[#1E293B] rounded-[20px] border border-[#334155]/70 p-6 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+    <div className="w-full max-w-md bg-card rounded-sm border border-border p-6 sm:p-8 shadow-none">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl border border-[#6366F1]/40 bg-[#6366F1]/15">
-            <Zap size={13} className="text-[#818CF8]" fill="#818CF8" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
+            <Zap size={13} className="text-primary" fill="currentColor" />
           </div>
-          <span className="font-bold text-[#F8FAFC] tracking-tight">DuePulse</span>
+          <span className="font-bold text-foreground tracking-tight">DuePulse</span>
         </Link>
         <div className="flex items-center gap-3">
-          {userEmail && <span className="text-[#64748B] text-xs hidden sm:block truncate max-w-[120px]">{userEmail}</span>}
-          <button type="button" disabled={loading} onClick={handleSignOut} className="flex items-center gap-1.5 text-[#64748B] hover:text-[#EF4444] text-xs transition-colors bg-transparent">
+          {userEmail && <span className="text-muted-foreground text-xs hidden sm:block truncate max-w-[120px]">{userEmail}</span>}
+          <button type="button" disabled={loading} onClick={handleSignOut} className="flex items-center gap-1.5 text-muted-foreground hover:text-danger text-xs transition-colors bg-transparent">
             <LogOut size={13} /> Sign out
           </button>
         </div>
@@ -121,7 +121,7 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
       {/* Progress dots */}
       <div className="flex gap-2 justify-center mb-8">
         {[1, 2, 3, 4].map((n) => (
-          <div key={n} className={`h-1.5 rounded-full transition-all duration-300 ${n === step ? "bg-[#6366F1] w-6" : n < step ? "bg-[#6366F1]/40 w-3" : "bg-[#334155] w-3"}`} />
+          <div key={n} className={`h-1.5 rounded-full transition-all duration-300 ${n === step ? "bg-primary w-6" : n < step ? "bg-primary-soft w-3" : "bg-muted w-3"}`} />
         ))}
       </div>
 
@@ -129,42 +129,42 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
       {step === 1 && (
         <div className="space-y-5">
           <div>
-            <h1 className="text-[#F8FAFC] font-bold text-2xl">Connect Canvas</h1>
-            <p className="text-[#94A3B8] text-sm mt-1">Link your Canvas account to get started.</p>
+            <h1 className="text-foreground font-bold text-2xl">Connect Canvas</h1>
+            <p className="text-muted-foreground text-sm mt-1">Link your Canvas account to get started.</p>
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="domain" className="text-[#CBD5E1] text-sm block">Canvas Domain</label>
+            <label htmlFor="domain" className="text-body text-sm block">Canvas Domain</label>
             <input id="domain" type="text" placeholder="yourschool.instructure.com" value={domain} onChange={(e) => setDomain(e.target.value)} className={inputCls} />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="token" className="text-[#CBD5E1] text-sm block">Personal Access Token</label>
+            <label htmlFor="token" className="text-body text-sm block">Personal Access Token</label>
             <div className="relative">
               <input id="token" type={showToken ? "text" : "password"} placeholder="••••••••••••••••" value={token} onChange={(e) => setToken(e.target.value)} className={`${inputCls} pr-12`} />
-              <button type="button" onClick={() => setShowToken(!showToken)} className="absolute inset-y-0 right-0 px-3 flex items-center text-[#64748B] hover:text-[#94A3B8]">
+              <button type="button" onClick={() => setShowToken(!showToken)} aria-label={showToken ? "Hide access token" : "Show access token"} className="absolute inset-y-0 right-0 px-3 flex items-center text-muted-foreground hover:text-primary-hover">
                 {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="text-[#64748B] text-xs">Canvas → Account → Settings → New Access Token</p>
+            <p className="text-muted-foreground text-xs">Canvas → Account → Settings → New Access Token</p>
           </div>
           <button type="button" onClick={handleTestConnection} disabled={loading || !domain || !token}
-            className="w-full rounded-xl bg-[#6366F1] hover:bg-[#818CF8] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm py-3 transition-colors shadow-[0_8px_25px_rgba(99,102,241,0.25)] min-h-11">
+            className="w-full rounded-sm bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm py-3 transition-colors shadow-none min-h-11">
             {loading ? "Testing…" : "Test Connection →"}
           </button>
-          {error && <p className="text-[#EF4444] text-sm">{error}</p>}
+          {error && <p className="text-danger text-sm">{error}</p>}
         </div>
       )}
 
       {/* Step 2 */}
       {step === 2 && (
         <div className="space-y-5 text-center">
-          <CheckCircle className="text-[#10B981] w-12 h-12 mx-auto" />
+          <CheckCircle className="text-success w-12 h-12 mx-auto" />
           <div>
-            <p className="text-[#F8FAFC] font-bold text-xl">Connected to {domain}</p>
-            <p className="text-[#94A3B8] text-sm mt-1">Found {courseCount} course{courseCount !== 1 ? "s" : ""}</p>
+            <p className="text-foreground font-bold text-xl">Connected to {domain}</p>
+            <p className="text-muted-foreground text-sm mt-1">Found {courseCount} course{courseCount !== 1 ? "s" : ""}</p>
           </div>
           <div className="flex gap-3">
-            <button type="button" onClick={() => setStep(1)} className="flex-1 rounded-xl border border-[#334155] bg-transparent text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#243044] text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
-            <button type="button" onClick={() => setStep(3)} className="flex-[2] rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm py-3 transition-colors min-h-11">Continue →</button>
+            <button type="button" onClick={() => setStep(1)} className="flex-1 rounded-sm border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-subtle text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
+            <button type="button" onClick={() => setStep(3)} className="flex-[2] rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 transition-colors min-h-11">Continue →</button>
           </div>
         </div>
       )}
@@ -173,13 +173,13 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
       {step === 3 && (
         <div className="space-y-5">
           <div>
-            <h1 className="text-[#F8FAFC] font-bold text-2xl">Enable Nudges</h1>
-            <p className="text-[#94A3B8] text-sm mt-1">Get timely reminders before assignments are due.</p>
+            <h1 className="text-foreground font-bold text-2xl">Enable Nudges</h1>
+            <p className="text-muted-foreground text-sm mt-1">Get timely reminders before assignments are due.</p>
           </div>
-          <button type="button" disabled={loading} aria-busy={loading} onClick={handleEnableNotifications} className="w-full rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm py-3 transition-colors shadow-[0_8px_25px_rgba(99,102,241,0.25)] min-h-11 disabled:opacity-60">{loading ? "Enabling nudges…" : "Enable Nudges"}</button>
+          <button type="button" disabled={loading} aria-busy={loading} onClick={handleEnableNotifications} className="w-full rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 transition-colors shadow-none min-h-11 disabled:opacity-60">{loading ? "Enabling nudges…" : "Enable Nudges"}</button>
           <div className="flex gap-3">
-            <button type="button" disabled={loading} onClick={() => setStep(2)} className="flex-1 rounded-xl border border-[#334155] bg-transparent text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#243044] text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
-            <button type="button" disabled={loading} onClick={() => setStep(4)} className="flex-[2] text-[#64748B] hover:text-[#94A3B8] text-sm py-3 bg-transparent min-h-11 transition-colors">Enable later on Dashboard</button>
+            <button type="button" disabled={loading} onClick={() => setStep(2)} className="flex-1 rounded-sm border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-subtle text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
+            <button type="button" disabled={loading} onClick={() => setStep(4)} className="flex-[2] text-muted-foreground hover:text-muted-foreground text-sm py-3 bg-transparent min-h-11 transition-colors">Enable later on Dashboard</button>
           </div>
         </div>
       )}
@@ -189,12 +189,12 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
         <div className="space-y-5 text-center">
           <div className="text-4xl mb-2">🎉</div>
           <div>
-            <h1 className="text-[#F8FAFC] font-bold text-2xl">You&apos;re all set!</h1>
-            <p className="text-[#94A3B8] text-sm mt-1">Your Canvas assignments are syncing in the background.</p>
+            <h1 className="text-foreground font-bold text-2xl">You&apos;re all set!</h1>
+            <p className="text-muted-foreground text-sm mt-1">Your Canvas assignments are syncing in the background.</p>
           </div>
           <div className="flex gap-3">
-            <button type="button" onClick={() => setStep(3)} className="flex-1 rounded-xl border border-[#334155] bg-transparent text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#243044] text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
-            <button type="button" onClick={handleGoToDashboard} className="flex-[2] rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-white font-semibold text-sm py-3 transition-colors shadow-[0_8px_25px_rgba(99,102,241,0.25)] min-h-11">Go to Dashboard →</button>
+            <button type="button" onClick={() => setStep(3)} className="flex-1 rounded-sm border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-subtle text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
+            <button type="button" onClick={handleGoToDashboard} className="flex-[2] rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 transition-colors shadow-none min-h-11">Go to Dashboard →</button>
           </div>
         </div>
       )}
