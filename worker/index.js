@@ -9,6 +9,7 @@ self.addEventListener('push', function(event) {
     self.registration.showNotification(data.title || 'DuePulse', {
       body: data.body || 'You have an assignment due soon',
       icon: '/icons/icon-192.png',
+      data: { assignmentId: data.assignmentId },
     })
   )
 })
@@ -23,13 +24,16 @@ self.addEventListener('activate', function(event) {
 // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/notificationclick_event
 self.addEventListener('notificationclick', function(event) {
   event.notification.close()
-  const dashboard = new URL('/dashboard', self.location.origin).href
+  const assignmentId = event.notification.data?.assignmentId
+  const hasAssignment = typeof assignmentId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(assignmentId)
+  const path = hasAssignment ? '/dashboard/assignments?assignment=' + assignmentId : '/dashboard'
+  const dashboard = new URL(path, self.location.origin).href
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
     for (const client of windows) {
       const url = new URL(client.url)
       if (url.origin !== self.location.origin) continue
-      if (url.pathname !== '/dashboard' && !url.pathname.startsWith('/dashboard/')) {
+      if (hasAssignment || (url.pathname !== '/dashboard' && !url.pathname.startsWith('/dashboard/'))) {
         const navigated = await client.navigate(dashboard)
         if (navigated) return navigated.focus()
         continue

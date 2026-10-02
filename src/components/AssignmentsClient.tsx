@@ -62,6 +62,7 @@ const FILTER_COLORS: Record<Filter, string> = {
 
 export default function AssignmentsClient({ assignments, hasCanvas, userTz }: Props) {
   const searchParams = useSearchParams();
+  const focusedId = searchParams.get("assignment");
   const urlFilter = searchParams.get("filter") as Filter | null;
   const isValidFilter = urlFilter && ["all", "overdue", "due-soon", "this-week", "upcoming", "no-date", "completed"].includes(urlFilter);
   const [activeFilter, setActiveFilter] = useState<Filter>(isValidFilter ? urlFilter : "all");
@@ -87,6 +88,7 @@ export default function AssignmentsClient({ assignments, hasCanvas, userTz }: Pr
   }
 
   const filtered = assignments.filter((a) => {
+    if (focusedId) return a.id === focusedId;
     let matchesFilter = false;
     if (activeFilter === "all") {
       matchesFilter = !a.is_completed;
@@ -121,6 +123,7 @@ export default function AssignmentsClient({ assignments, hasCanvas, userTz }: Pr
 
   return (
     <div className="flex flex-col gap-5">
+      {focusedId && <a href="/dashboard/assignments" className="text-primary font-semibold underline">Back to all assignments</a>}
       {/* Filter tabs */}
       <div className="flex items-center gap-1 flex-wrap">
         {(Object.keys(FILTER_LABELS) as Filter[]).map((f) => {

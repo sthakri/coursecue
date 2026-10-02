@@ -75,6 +75,10 @@ Files: `src/components/AssignmentCard.tsx`, `AssignmentsClient.tsx` · Updated 2
 | Status | `bg-danger-soft text-danger`, `bg-warning-soft text-warning`, `bg-success-soft text-success` |
 
 Status must include text. Keep card text fully opaque; use course colors only as accents.
+Assignment actions use visible labels and a 40px minimum height. Mark complete uses
+`bg-primary text-primary-foreground`; Dismiss uses `border-input` and opens an inline
+confirmation (`bg-warning-soft border-warning`). Explain that these actions update
+DuePulse only. Disable both actions while either request is pending.
 
 ### Forms and actions
 

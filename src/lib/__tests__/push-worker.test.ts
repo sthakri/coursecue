@@ -50,4 +50,21 @@ describe("DuePulse push worker", () => {
     await worker.dispatch("activate", {});
     expect(worker.caches.delete).toHaveBeenCalledWith("start-url");
   });
+
+  it("opens the specific assignment from an overdue notification", async () => {
+    const worker = loadWorker();
+    const assignmentId = "11111111-1111-4111-8111-111111111111";
+    await worker.dispatch("push", { data: { json: () => ({ title: "Overdue", body: "Review", assignmentId }) } });
+    expect(worker.showNotification).toHaveBeenCalledWith("Overdue", expect.objectContaining({ data: { assignmentId } }));
+    const navigate = vi.fn().mockResolvedValue({ focus: vi.fn() });
+    worker.clients.matchAll.mockResolvedValue([{ url: "https://duepulse.example/dashboard", navigate }] as never);
+    await worker.dispatch("notificationclick", { notification: { close: vi.fn(), data: { assignmentId } } });
+    expect(navigate).toHaveBeenCalledWith(`https://duepulse.example/dashboard/assignments?assignment=${assignmentId}`);
+  });
+
+  it("never navigates to a payload URL or malformed assignment id", async () => {
+    const worker = loadWorker();
+    await worker.dispatch("notificationclick", { notification: { close: vi.fn(), data: { assignmentId: "https://evil.example", url: "https://evil.example" } } });
+    expect(worker.clients.openWindow).toHaveBeenCalledWith("https://duepulse.example/dashboard");
+  });
 });

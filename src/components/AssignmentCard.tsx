@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { useDuePulseStore } from "@/lib/store";
 
 interface AssignmentCardProps {
@@ -59,7 +59,6 @@ export default function AssignmentCard({
   course_name,
   due_at,
   points_possible,
-  canvas_assignment_id: _canvas_assignment_id,
   course_color = "var(--primary)",
   userTz,
   is_completed = false,
@@ -69,12 +68,19 @@ export default function AssignmentCard({
   const [dismissing, setDismissing] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(is_completed);
+  const [previousCompleted, setPreviousCompleted] = useState(is_completed);
+  const [confirmDismiss, setConfirmDismiss] = useState(false);
+  if (previousCompleted !== is_completed) {
+    setPreviousCompleted(is_completed);
+    setCompleted(is_completed);
+  }
 
   const dueInfo = due_at ? getDueDateInfo(due_at, userTz) : null;
   const isOverdue = !completed && (dueInfo?.isOverdue ?? false);
   const isDueSoon = !completed && (dueInfo?.isDueSoon ?? false);
 
   async function handleToggleComplete() {
+    if (completing || dismissing) return;
     setCompleting(true);
     const nextState = !completed;
     setCompleted(nextState);
@@ -102,6 +108,7 @@ export default function AssignmentCard({
   }
 
   async function handleDismiss() {
+    if (completing || dismissing) return;
     setDismissing(true);
     try {
       const res = await fetch("/api/assignments/dismiss", {
@@ -111,7 +118,7 @@ export default function AssignmentCard({
       });
       const data = (await res.json()) as { success?: boolean; error?: string };
       if (!res.ok) { toast.error(data.error ?? "Dismiss failed"); return; }
-      toast.success("Assignment dismissed");
+      toast.success("Dismissed from DuePulse. Canvas is unchanged.");
       bumpAssignmentsVersion();
       router.refresh();
     } catch { toast.error("Network error — dismiss failed"); }
@@ -126,43 +133,54 @@ export default function AssignmentCard({
       )}
       style={{ borderLeft: `3px solid ${course_color}` }}
     >
-      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1">
-        {/* Complete / Checkmark toggle button */}
+      <p className="text-muted-foreground text-xs font-bold uppercase tracking-wide leading-normal">{course_name}</p>
+      <p className={cn("text-foreground font-semibold text-base break-words", completed && "line-through text-muted-foreground")}>
+        {title}
+      </p>
+      <div className="flex flex-wrap items-center gap-2 mt-1">
         <button
           type="button"
           onClick={handleToggleComplete}
-          disabled={completing}
+          disabled={completing || dismissing}
           aria-label={completed ? "Mark as incomplete" : "Mark as completed"}
           title={completed ? "Mark as incomplete" : "Mark as completed"}
           className={cn(
-            "rounded-md p-1 transition disabled:opacity-50 flex items-center justify-center",
+            "min-h-10 rounded-sm px-3 py-2 text-sm font-semibold transition disabled:opacity-50 inline-flex gap-2 items-center justify-center",
             completed
               ? "bg-success-soft text-success hover:bg-success-soft"
-              : "text-muted-foreground hover:text-success hover:bg-success-soft border border-transparent hover:border-success/20"
+              : "bg-primary text-primary-foreground hover:bg-primary-hover"
           )}
         >
           <Check size={14} className={completed ? "stroke-[2.5]" : "stroke-[1.5]"} />
+          {completing ? "Saving…" : completed ? "Mark incomplete" : "Mark complete"}
         </button>
 
         {/* Dismiss button for overdue */}
         {isOverdue && (
           <button
             type="button"
-            onClick={handleDismiss}
-            disabled={dismissing}
+            onClick={() => setConfirmDismiss(!confirmDismiss)}
+            disabled={dismissing || completing}
             aria-label="Dismiss overdue assignment"
             title="Dismiss this overdue assignment"
-            className="rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-body disabled:opacity-50"
+            aria-expanded={confirmDismiss}
+            className="min-h-10 rounded-sm border border-input px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
           >
-            <X size={14} />
+            Dismiss
           </button>
         )}
       </div>
 
-      <p className="text-muted-foreground text-xs uppercase tracking-wide leading-none pr-12">{course_name}</p>
-      <p className={cn("text-foreground font-semibold text-base pr-12", completed && "line-through text-muted-foreground")}>
-        {title}
-      </p>
+      {isOverdue && <p className="text-sm text-muted-foreground">Already submitted? Mark complete here. This updates DuePulse only.</p>}
+      {confirmDismiss && isOverdue && (
+        <div className="rounded-sm border border-warning bg-warning-soft p-3 text-sm">
+          <p className="text-foreground">Hide this assignment and stop its reminders? It will stay in Canvas.</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" disabled={dismissing || completing} onClick={handleDismiss} className="min-h-10 rounded-sm bg-primary px-3 py-2 font-semibold text-primary-foreground disabled:opacity-50">{dismissing ? "Dismissing…" : "Yes, dismiss"}</button>
+            <button type="button" disabled={dismissing} onClick={() => setConfirmDismiss(false)} className="min-h-10 px-3 py-2 text-foreground">Keep assignment</button>
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         {due_at ? (
           <span className="text-muted-foreground text-xs">{dueInfo!.label}</span>

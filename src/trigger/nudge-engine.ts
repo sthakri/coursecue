@@ -559,7 +559,7 @@ export const nudgeEngine = schedules.task({
             try {
               const remainingTtl = overdueReminderTtl(a.due_at, new Date())
               if (remainingTtl === 0) break
-              await sendPushNotification(subscription, nudgeText, "Overdue assignment", remainingTtl)
+              await sendPushNotification(subscription, nudgeText, "Overdue assignment", remainingTtl, a.id)
               delivered = true
             } catch (err: unknown) {
               const statusCode = (err as { statusCode?: number })?.statusCode
