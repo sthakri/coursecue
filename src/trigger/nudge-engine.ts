@@ -1,7 +1,7 @@
-import { queue, schedules } from "@trigger.dev/sdk/v3"
+import { queue, schedules } from "@trigger.dev/sdk"
 import { createServerClient } from "@supabase/ssr"
 import { env } from "@/lib/env"
-import { generateNudge, generateProductiveWindowNudge } from "@/lib/nim"
+import { generateProductiveWindowNudge } from "@/lib/nim"
 import { sendPushNotification } from "@/lib/webpush"
 import { getLocalHour, getLocalDay, getDefaultTimezone, formatClockTime, coerceTimezone, COMPLETED_RETENTION_DAYS } from "@/lib/time"
 import {
@@ -15,7 +15,7 @@ import type { Database } from "@/database.types"
 import webpush from "web-push"
 import ws from "ws"
 
-import { filterDailyOverdueNudge, filterNeverNudgedOverdue } from "@/lib/overdue-dedup";
+import { filterDailyOverdueNudge, filterNeverNudgedOverdue, overdueReminderTtl, OVERDUE_REMINDER_WINDOW_MS } from "@/lib/overdue-dedup";
 import { isActiveSlot } from "@/lib/ml";
 export { filterDailyOverdueNudge, filterNeverNudgedOverdue };
 
@@ -462,8 +462,8 @@ export const nudgeEngine = schedules.task({
     }
 
     // ── Section D: Overdue reminders ──────────────────────────────────────────
-    // One nudge per overdue assignment per 24h (rolling window), until completed
-    // or dismissed. Fires even in minimal mode; quiet hours and pause honored.
+    // One nudge per 24h for the first 72h after the deadline, stopping earlier
+    // if completed or dismissed. Quiet hours and pause are honored.
     // CLAIM BEFORE SEND: the nudge_logs row is upserted first; if the claim
     // fails we do NOT send. (Prod bug fixed 2026-08-23: sends succeeded while
     // every log insert failed → overdue spam every run.)
@@ -499,6 +499,7 @@ export const nudgeEngine = schedules.task({
           .eq("is_completed", false)
           .is("dismissed_at", null)
           .lt("due_at", now.toISOString())
+          .gt("due_at", new Date(now.getTime() - OVERDUE_REMINDER_WINDOW_MS).toISOString())
           .order("due_at", { ascending: true })
           .limit(25)
 
@@ -510,13 +511,18 @@ export const nudgeEngine = schedules.task({
 
         // 24-hour daily dedup: skip any assignment nudged within the last 24 hours.
         const assignmentIds = overdueAssignments.map((a) => a.id)
-        const { data: existingOverdueLogs } = await serviceClient
+        const { data: existingOverdueLogs, error: overdueLogsError } = await serviceClient
           .from("nudge_logs")
           .select("assignment_id, sent_at")
           .eq("user_id", userId)
           .eq("nudge_type", "overdue")
           .in("assignment_id", assignmentIds)
           .gte("sent_at", twentyFourHoursAgo.toISOString())
+
+        if (overdueLogsError) {
+          console.error(`[nudge-engine] Section D uid=${userId} history unavailable — NOT sending`, overdueLogsError.message)
+          return
+        }
 
         // Cap pushes per run AFTER the 24h dedup so the overdue queue rotates.
         const toNudge = filterDailyOverdueNudge(overdueAssignments, existingOverdueLogs ?? [], now).slice(0, 5)
@@ -526,14 +532,10 @@ export const nudgeEngine = schedules.task({
         }
 
         for (const a of toNudge) {
-          const courseName =
-            (a.courses as { name: string } | null)?.name ?? "Unknown Course"
-          const nudgeText = await generateNudge(
-            a.title,
-            a.due_at ?? now.toISOString(),
-            courseName,
-            userTz,
-          )
+          const ttl = overdueReminderTtl(a.due_at, new Date())
+          if (ttl === 0) continue
+          const title = a.title.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, "").slice(0, 90)
+          const nudgeText = `${title} is overdue. Already done? Mark it complete in DuePulse, or dismiss it if you no longer need it. Reminders stop after 3 days.`
 
           // Claim today's slot first — see claim-before-send note above.
           const { error: claimError } = await serviceClient
@@ -555,7 +557,9 @@ export const nudgeEngine = schedules.task({
               keys: { p256dh: sub.p256dh, auth: sub.auth },
             }
             try {
-              await sendPushNotification(subscription, nudgeText, "Overdue Assignment 📌")
+              const remainingTtl = overdueReminderTtl(a.due_at, new Date())
+              if (remainingTtl === 0) break
+              await sendPushNotification(subscription, nudgeText, "Overdue assignment", remainingTtl)
               delivered = true
             } catch (err: unknown) {
               const statusCode = (err as { statusCode?: number })?.statusCode
