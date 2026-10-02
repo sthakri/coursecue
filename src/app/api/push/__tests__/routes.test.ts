@@ -72,7 +72,7 @@ class SubscriptionQuery {
 }
 
 function request(body: unknown, method = "POST") {
-  return new NextRequest("https://duepulse.example/api/push/subscribe", {
+  return new NextRequest("https://coursecue.example/api/push/subscribe", {
     method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
 }
@@ -115,7 +115,7 @@ describe("push request boundaries", () => {
     ["subscribe DELETE", unsubscribe, "DELETE"],
     ["test POST", testPush, "POST"],
   ] as const)("returns 400 for malformed JSON in %s", async (_name, handler, method) => {
-    const malformed = new NextRequest("https://duepulse.example/api/push/subscribe", {
+    const malformed = new NextRequest("https://coursecue.example/api/push/subscribe", {
       method, headers: { "Content-Type": "application/json" }, body: "{broken",
     });
     const response = await handler(malformed);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AlertTriangle, Info, X } from "lucide-react";
-import { useDuePulseStore } from "@/lib/store";
+import { useCourseCueStore } from "@/lib/store";
 
 interface StressData { stressLevel: "low" | "medium" | "high"; pileUpDetected: boolean; peakWindowStart: string | null; peakWindowEnd: string | null; assignmentCount: number; totalUpcoming: number }
 
@@ -18,7 +18,7 @@ export default function StressAlert({ userId }: { userId: string }) {
     catch { return false; }
   });
 
-  const assignmentsVersion = useDuePulseStore((s) => s.assignmentsVersion);
+  const assignmentsVersion = useCourseCueStore((s) => s.assignmentsVersion);
 
   useEffect(() => {
     fetch("/api/stress").then((r) => r.json()).then((d) => {

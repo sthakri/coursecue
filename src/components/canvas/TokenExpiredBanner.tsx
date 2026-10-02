@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useDuePulseStore } from "@/lib/store";
+import { useCourseCueStore } from "@/lib/store";
 import { AlertCircle, X } from "lucide-react";
 import { useState } from "react";
 
 export default function TokenExpiredBanner() {
-  const tokenExpired = useDuePulseStore((s) => s.tokenExpired);
+  const tokenExpired = useCourseCueStore((s) => s.tokenExpired);
   const [dismissed, setDismissed] = useState(false);
 
   if (!tokenExpired || dismissed) return null;

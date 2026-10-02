@@ -11,7 +11,8 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "DuePulse",
+  title: "CourseCue",
+  applicationName: "CourseCue",
   description: "Your Canvas assignments, organised around what’s next. Plan your coursework and get reminders that know when to stop.",
 };
 
@@ -27,6 +28,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="theme-color" content="#4B1610" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="CourseCue" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
           content="default"

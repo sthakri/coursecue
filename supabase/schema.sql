@@ -1,5 +1,5 @@
 -- ============================================================
--- DuePulse — Full Schema
+-- CourseCue — Full Schema
 -- ============================================================
 --
 -- Migration: Add notification preferences (Session 16)

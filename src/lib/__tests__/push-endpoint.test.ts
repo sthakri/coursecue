@@ -67,9 +67,9 @@ describe("stored push subscription sends", () => {
 
   it("sends a valid vendor subscription with the requested payload and TTL", async () => {
     const subscription = { endpoint: allowed[0], keys };
-    await sendPushNotification(subscription, "Reminder", "DuePulse", 3600);
+    await sendPushNotification(subscription, "Reminder", "CourseCue", 3600);
     expect(push.sendNotification).toHaveBeenCalledWith(
-      subscription, JSON.stringify({ title: "DuePulse", body: "Reminder" }), { TTL: 3600 },
+      subscription, JSON.stringify({ title: "CourseCue", body: "Reminder" }), { TTL: 3600 },
     );
   });
 });

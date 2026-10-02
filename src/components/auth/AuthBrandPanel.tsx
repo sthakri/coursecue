@@ -5,7 +5,7 @@ export default function AuthBrandPanel() {
     <aside className="hidden min-h-screen w-80 shrink-0 flex-col justify-between bg-sidebar p-10 text-sidebar-foreground lg:flex xl:w-96">
       <div className="flex items-center gap-3 text-xl font-bold">
         <Zap size={28} className="text-sidebar-foreground" aria-hidden="true" />
-        DuePulse
+        CourseCue
       </div>
       <div>
         <BookOpen size={40} className="mb-6 text-sidebar-foreground" aria-hidden="true" />

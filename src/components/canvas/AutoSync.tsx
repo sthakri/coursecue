@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useDuePulseStore } from "@/lib/store";
+import { useCourseCueStore } from "@/lib/store";
 
 const SYNC_INTERVAL_MS = 5 * 60 * 1000;
 const VISIBILITY_COOLDOWN_MS = 5 * 60 * 1000;
@@ -10,7 +10,7 @@ const RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000;
 
 export default function AutoSync() {
   const router = useRouter();
-  const setTokenExpired = useDuePulseStore((s) => s.setTokenExpired);
+  const setTokenExpired = useCourseCueStore((s) => s.setTokenExpired);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const backoffTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSyncRef = useRef<number>(0);

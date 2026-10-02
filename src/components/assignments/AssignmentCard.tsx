@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Check, FilePenLine } from "lucide-react";
-import { useDuePulseStore } from "@/lib/store";
+import { useCourseCueStore } from "@/lib/store";
 
 interface AssignmentCardProps {
   id: string;
@@ -66,7 +66,7 @@ export default function AssignmentCard({
   now,
 }: AssignmentCardProps) {
   const router = useRouter();
-  const bumpAssignmentsVersion = useDuePulseStore((s) => s.bumpAssignmentsVersion);
+  const bumpAssignmentsVersion = useCourseCueStore((s) => s.bumpAssignmentsVersion);
   const [dismissing, setDismissing] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(is_completed);
@@ -120,7 +120,7 @@ export default function AssignmentCard({
       });
       const data = (await res.json()) as { success?: boolean; error?: string };
       if (!res.ok) { toast.error(data.error ?? "Dismiss failed"); return; }
-      toast.success("Dismissed from DuePulse. Canvas is unchanged.");
+      toast.success("Dismissed from CourseCue. Canvas is unchanged.");
       bumpAssignmentsVersion();
       router.refresh();
     } catch { toast.error("Network error — dismiss failed"); }
@@ -173,7 +173,7 @@ export default function AssignmentCard({
         )}
       </div>
 
-      {isOverdue && <p className="sm:col-start-2 sm:col-span-2 sm:row-start-4 text-sm text-muted-foreground">Already submitted? Mark complete here. This updates DuePulse only.</p>}
+      {isOverdue && <p className="sm:col-start-2 sm:col-span-2 sm:row-start-4 text-sm text-muted-foreground">Already submitted? Mark complete here. This updates CourseCue only.</p>}
       {confirmDismiss && isOverdue && (
         <div className="sm:col-span-3 sm:row-start-5 rounded-sm border border-warning bg-warning-soft p-3 text-sm">
           <p className="text-foreground">Hide this assignment and stop its reminders? It will stay in Canvas.</p>

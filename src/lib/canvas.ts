@@ -195,7 +195,7 @@ export function plannerItemToAssignment(item: unknown, domain: string): CanvasAs
   }
   const plannable = record.plannable as Record<string, unknown> | undefined;
   // Some Canvas installs return a path-only html_url ("/courses/1/..."),
-  // which would resolve against the DuePulse origin and 404. Make it absolute.
+  // which would resolve against the CourseCue origin and 404. Make it absolute.
   const rawUrl = typeof record.html_url === "string" ? record.html_url : null;
   const html_url = rawUrl?.startsWith("/") ? `https://${domain}${rawUrl}` : rawUrl;
   return {

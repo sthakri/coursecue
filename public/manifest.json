@@ -1,6 +1,6 @@
 {
-  "name": "DuePulse",
-  "short_name": "DuePulse",
+  "name": "CourseCue",
+  "short_name": "CourseCue",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

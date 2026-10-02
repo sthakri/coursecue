@@ -126,7 +126,7 @@ async function notifyTokenExpired(
     try {
       await sendPushNotification(
         subscription,
-        "DuePulse can't reach Canvas. Open the app to reconnect your Canvas token.",
+        "CourseCue can't reach Canvas. Open the app to reconnect your Canvas token.",
         "Canvas Disconnected ⚠️",
       )
       delivered = true

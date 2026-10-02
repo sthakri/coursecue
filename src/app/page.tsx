@@ -13,7 +13,7 @@ const features = [
   {
     icon: Brain,
     title: "Find Your Rhythm",
-    body: "Uses your activity in DuePulse to suggest useful times to start studying. The more you use it, the clearer the pattern.",
+    body: "Uses your activity in CourseCue to suggest useful times to start studying. The more you use it, the clearer the pattern.",
   },
   {
     icon: Bell,
@@ -52,7 +52,7 @@ export default async function HomePage() {
               <Zap size={15} className="text-sidebar-foreground" fill="currentColor" />
             </div>
             <span className="font-bold text-lg text-sidebar-foreground tracking-tight">
-              DuePulse
+              CourseCue
             </span>
           </Link>
 
@@ -131,7 +131,7 @@ export default async function HomePage() {
       <footer className="py-8 text-center border-t border-border mt-auto">
         <p className="text-muted-foreground text-sm">
           <Link href="/" className="text-info hover:text-info-hover transition-colors">
-            DuePulse
+            CourseCue
           </Link>{" "}
           — Built for students, by a student.
         </p>

@@ -9,14 +9,14 @@ const iosSteps = [
   { icon: Share2, label: "Tap the share icon at the bottom of Safari" },
   { icon: ArrowDown, label: "Scroll down and tap Add to Home Screen" },
   { icon: Plus, label: "Tap Add in the top right corner" },
-  { icon: CheckCircle, label: "Open DuePulse from your home screen" },
+  { icon: CheckCircle, label: "Open CourseCue from your home screen" },
 ];
 
 const androidSteps = [
   { icon: Ellipsis, label: "Tap the three dots in the top right of Chrome" },
   { icon: ArrowDown, label: "Tap Add to Home Screen" },
   { icon: Plus, label: "Tap Add in the bottom right" },
-  { icon: CheckCircle, label: "Open DuePulse from your home screen" },
+  { icon: CheckCircle, label: "Open CourseCue from your home screen" },
 ];
 
 function detectPlatform(): Platform {
@@ -31,7 +31,7 @@ function detectPlatform(): Platform {
 
 export default function MobileInstallGuide() {
   const [dismissed, setDismissed] = useState(() => {
-    try { return typeof sessionStorage !== "undefined" && sessionStorage.getItem("duepulse_install_dismissed") === "true"; }
+    try { return typeof sessionStorage !== "undefined" && sessionStorage.getItem("coursecue_install_dismissed") === "true"; }
     catch { return false; }
   });
   const [expanded, setExpanded] = useState(false);
@@ -44,7 +44,7 @@ export default function MobileInstallGuide() {
 
   function handleDismiss() {
     setDismissed(true);
-    try { sessionStorage.setItem("duepulse_install_dismissed", "true"); } catch {}
+    try { sessionStorage.setItem("coursecue_install_dismissed", "true"); } catch {}
   }
 
   return (
@@ -52,7 +52,7 @@ export default function MobileInstallGuide() {
       <div className="flex items-start gap-3">
         <Smartphone className="text-info w-5 h-5 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-foreground font-semibold text-sm">Add DuePulse to your Home Screen</p>
+          <p className="text-foreground font-semibold text-sm">Add CourseCue to your Home Screen</p>
           <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
             Get push notifications and fast access from your Home Screen — works best as a standalone app on {osName}.
           </p>

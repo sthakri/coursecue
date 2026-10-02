@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import OnboardingWizard from "@/components/auth/OnboardingWizard";
 
 export const metadata = {
-  title: "Get Started — DuePulse",
-  description: "Connect your Canvas account and set up DuePulse.",
+  title: "Get Started — CourseCue",
+  description: "Connect your Canvas account and set up CourseCue.",
 };
 
 export default async function OnboardingPage() {

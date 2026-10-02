@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface DuePulseState {
+interface CourseCueState {
   isSyncing: boolean;
   tokenExpired: boolean;
   /** Bumped on every complete/dismiss so data-dependent client widgets
@@ -12,7 +12,7 @@ interface DuePulseState {
   bumpAssignmentsVersion: () => void;
 }
 
-export const useDuePulseStore = create<DuePulseState>()((set) => ({
+export const useCourseCueStore = create<CourseCueState>()((set) => ({
   isSyncing: false,
   tokenExpired: false,
   assignmentsVersion: 0,

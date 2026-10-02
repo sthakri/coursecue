@@ -73,11 +73,11 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
     try {
       const result = await enablePushNotifications(env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
       if (result === "unsupported") {
-        toast.info(isIOS() ? "Open DuePulse from your Home Screen to enable notifications (iOS 16.4 or later)." : "Notifications are unavailable in this browser.");
+        toast.info(isIOS() ? "Open CourseCue from your Home Screen to enable notifications (iOS 16.4 or later)." : "Notifications are unavailable in this browser.");
         return;
       }
       if (result === "idle") return;
-      if (result === "denied") toast.info("Notifications blocked — enable DuePulse in device settings.");
+      if (result === "denied") toast.info("Notifications blocked — enable CourseCue in device settings.");
       else toast.success("Nudges enabled! You'll get timely reminders.");
       setStep(4);
     } catch (error) {
@@ -108,7 +108,7 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
           <div className="flex h-7 w-7 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
             <Zap size={13} className="text-primary" fill="currentColor" />
           </div>
-          <span className="font-bold text-foreground tracking-tight">DuePulse</span>
+          <span className="font-bold text-foreground tracking-tight">CourseCue</span>
         </Link>
         <div className="flex items-center gap-3">
           {userEmail && <span className="text-muted-foreground text-xs hidden sm:block truncate max-w-[120px]">{userEmail}</span>}

@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Zap, PlugZap, CalendarDays, Cpu, Bell } from "lucide-react";
 
 export const metadata = {
-  title: "How It Works — DuePulse",
+  title: "How It Works — CourseCue",
   description:
-    "Connect Canvas, let DuePulse learn your patterns, and receive exactly the right nudge at the right moment.",
+    "Connect Canvas, let CourseCue learn your patterns, and receive exactly the right nudge at the right moment.",
 };
 
 const steps = [
@@ -12,13 +12,13 @@ const steps = [
     number: "01",
     icon: PlugZap,
     title: "Connect your Canvas account",
-    body: "Enter your Canvas domain and a personal access token — one-time setup that takes under two minutes. DuePulse immediately reads your courses, assignments, and due dates.",
+    body: "Enter your Canvas domain and a personal access token — one-time setup that takes under two minutes. CourseCue immediately reads your courses, assignments, and due dates.",
     detail: "Canvas → Account → Settings → New Access Token. Your token is encrypted at rest and never shared.",
   },
   {
     number: "02",
     icon: CalendarDays,
-    title: "DuePulse reads your deadlines",
+    title: "CourseCue reads your deadlines",
     body: "Every assignment, every due date, every course color — pulled straight from Canvas. No copy-pasting. No manual calendar entries. Everything stays in sync.",
     detail: "Hit Sync Now to pull the latest at any time. Sync also runs automatically in the background via scheduled jobs.",
   },
@@ -26,14 +26,14 @@ const steps = [
     number: "03",
     icon: Cpu,
     title: "Your focus patterns are learned",
-    body: "While you use the dashboard — on any device, at any hour — DuePulse quietly logs your active time. Over days and weeks, a personal model forms.",
+    body: "While you use the dashboard — on any device, at any hour — CourseCue quietly logs your active time. Over days and weeks, a personal model forms.",
     detail: 'Your "Focus Persona" (Early Bird, Night Owl, Weekend Grinder…) and your personal Power Block emerge automatically.',
   },
   {
     number: "04",
     icon: Bell,
     title: "You get the right nudge at the right moment",
-    body: "When an assignment is coming up AND you're historically likely to sit down and work, DuePulse sends a push notification — written by AI for that specific assignment.",
+    body: "When an assignment is coming up AND you're historically likely to sit down and work, CourseCue sends a push notification — written by AI for that specific assignment.",
     detail: "Three modes: Aggressive, Normal, Minimal. Quiet Hours blocks late-night nudges.",
   },
 ];
@@ -48,7 +48,7 @@ export default function HowItWorksPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-sidebar-border bg-sidebar-accent shadow-none">
               <Zap size={15} className="text-sidebar-foreground" fill="currentColor" />
             </div>
-            <span className="font-bold text-sidebar-foreground tracking-tight">DuePulse</span>
+            <span className="font-bold text-sidebar-foreground tracking-tight">CourseCue</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/features" className="text-sm text-sidebar-muted hover:text-sidebar-foreground transition-colors">Features</Link>
@@ -70,7 +70,7 @@ export default function HowItWorksPage() {
           <span className="text-info">here&apos;s how it works.</span>
         </h1>
         <p className="text-body text-lg leading-relaxed max-w-xl mx-auto">
-          DuePulse is a system, not just an app. Each piece builds on the last, creating something that gets smarter the longer you use it.
+          CourseCue is a system, not just an app. Each piece builds on the last, creating something that gets smarter the longer you use it.
         </p>
       </section>
 
@@ -112,8 +112,8 @@ export default function HowItWorksPage() {
         <div className="rounded-sm border border-border bg-card divide-y divide-border/50">
           {[
             { q: "Is my Canvas token safe?", a: "Yes. Your token is stored encrypted in our database (Supabase with row-level security) and is never exposed in responses or logs." },
-            { q: "Do notifications work on iPhone?", a: "Yes, but only when DuePulse is installed as a standalone app (Add to Home Screen). Safari browser tabs can't receive background push notifications — it's an iOS limitation." },
-            { q: "How long until DuePulse learns my patterns?", a: "You'll see basic stats immediately. A meaningful focus model forms after 3–7 days of regular visits." },
+            { q: "Do notifications work on iPhone?", a: "Yes, but only when CourseCue is installed as a standalone app (Add to Home Screen). Safari browser tabs can't receive background push notifications — it's an iOS limitation." },
+            { q: "How long until CourseCue learns my patterns?", a: "You'll see basic stats immediately. A meaningful focus model forms after 3–7 days of regular visits." },
           ].map(({ q, a }) => (
             <div key={q} className="px-6 py-5">
               <p className="text-foreground font-semibold text-sm mb-1.5">{q}</p>
@@ -135,7 +135,7 @@ export default function HowItWorksPage() {
       </section>
 
       <footer className="border-t border-border mt-auto py-6 text-center">
-        <p className="text-muted-foreground text-xs">DuePulse — Built for students, by a student.</p>
+        <p className="text-muted-foreground text-xs">CourseCue — Built for students, by a student.</p>
       </footer>
     </div>
   );

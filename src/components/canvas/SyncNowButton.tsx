@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDuePulseStore } from "@/lib/store";
+import { useCourseCueStore } from "@/lib/store";
 
 export default function SyncNowButton() {
   const router = useRouter();
-  const isSyncing = useDuePulseStore((s) => s.isSyncing);
-  const setIsSyncing = useDuePulseStore((s) => s.setIsSyncing);
-  const setTokenExpired = useDuePulseStore((s) => s.setTokenExpired);
+  const isSyncing = useCourseCueStore((s) => s.isSyncing);
+  const setIsSyncing = useCourseCueStore((s) => s.setIsSyncing);
+  const setTokenExpired = useCourseCueStore((s) => s.setTokenExpired);
 
   async function handleSync() {
     setIsSyncing(true);

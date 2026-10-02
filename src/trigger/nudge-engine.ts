@@ -519,7 +519,7 @@ export const nudgeEngine = schedules.task({
           const ttl = overdueReminderTtl(a.due_at, new Date())
           if (ttl === 0) continue
           const title = a.title.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, "").slice(0, 90)
-          const nudgeText = `${title} is overdue. Already done? Mark it complete in DuePulse, or dismiss it if you no longer need it. Reminders stop after 3 days.`
+          const nudgeText = `${title} is overdue. Already done? Mark it complete in CourseCue, or dismiss it if you no longer need it. Reminders stop after 3 days.`
 
           // Claim today's slot first — see claim-before-send note above.
           const { error: claimError } = await serviceClient

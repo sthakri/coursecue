@@ -6,7 +6,7 @@ self.addEventListener('push', function(event) {
     // Non-JSON or empty payload — fall back to default text instead of crashing
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'DuePulse', {
+    self.registration.showNotification(data.title || 'CourseCue', {
       body: data.body || 'You have an assignment due soon',
       icon: '/icons/icon-192.png',
       data: { assignmentId: data.assignmentId },

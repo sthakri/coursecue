@@ -9,7 +9,7 @@ function loadWorker() {
   const clients = { matchAll: vi.fn().mockResolvedValue([]), openWindow: vi.fn().mockResolvedValue(null) };
   runInNewContext(readFileSync("worker/index.js", "utf8"), {
     self: { addEventListener: (type: string, listener: (event: unknown) => void) => listeners.set(type, listener),
-      registration: { showNotification }, location: { origin: "https://duepulse.example" }, clients },
+      registration: { showNotification }, location: { origin: "https://coursecue.example" }, clients },
     caches, URL,
   });
   async function dispatch(type: string, event: object) {
@@ -21,11 +21,11 @@ function loadWorker() {
   return { showNotification, caches, clients, dispatch };
 }
 
-describe("DuePulse push worker", () => {
+describe("CourseCue push worker", () => {
   it("displays a default visible notification for a malformed payload", async () => {
     const worker = loadWorker();
     await worker.dispatch("push", { data: { json: () => { throw new SyntaxError(); } } });
-    expect(worker.showNotification).toHaveBeenCalledWith("DuePulse", expect.objectContaining({ body: "You have an assignment due soon" }));
+    expect(worker.showNotification).toHaveBeenCalledWith("CourseCue", expect.objectContaining({ body: "You have an assignment due soon" }));
   });
 
   it("opens the dashboard when a notification is tapped with the app closed", async () => {
@@ -33,13 +33,13 @@ describe("DuePulse push worker", () => {
     const close = vi.fn();
     await worker.dispatch("notificationclick", { notification: { close } });
     expect(close).toHaveBeenCalled();
-    expect(worker.clients.openWindow).toHaveBeenCalledWith("https://duepulse.example/dashboard");
+    expect(worker.clients.openWindow).toHaveBeenCalledWith("https://coursecue.example/dashboard");
   });
 
   it("focuses the existing dashboard instead of opening another window", async () => {
     const worker = loadWorker();
     const focus = vi.fn().mockResolvedValue(undefined);
-    worker.clients.matchAll.mockResolvedValue([{ url: "https://duepulse.example/dashboard/assignments", focus }] as never);
+    worker.clients.matchAll.mockResolvedValue([{ url: "https://coursecue.example/dashboard/assignments", focus }] as never);
     await worker.dispatch("notificationclick", { notification: { close: vi.fn() } });
     expect(focus).toHaveBeenCalled();
     expect(worker.clients.openWindow).not.toHaveBeenCalled();
@@ -57,14 +57,14 @@ describe("DuePulse push worker", () => {
     await worker.dispatch("push", { data: { json: () => ({ title: "Overdue", body: "Review", assignmentId }) } });
     expect(worker.showNotification).toHaveBeenCalledWith("Overdue", expect.objectContaining({ data: { assignmentId } }));
     const navigate = vi.fn().mockResolvedValue({ focus: vi.fn() });
-    worker.clients.matchAll.mockResolvedValue([{ url: "https://duepulse.example/dashboard", navigate }] as never);
+    worker.clients.matchAll.mockResolvedValue([{ url: "https://coursecue.example/dashboard", navigate }] as never);
     await worker.dispatch("notificationclick", { notification: { close: vi.fn(), data: { assignmentId } } });
-    expect(navigate).toHaveBeenCalledWith(`https://duepulse.example/dashboard/assignments?assignment=${assignmentId}`);
+    expect(navigate).toHaveBeenCalledWith(`https://coursecue.example/dashboard/assignments?assignment=${assignmentId}`);
   });
 
   it("never navigates to a payload URL or malformed assignment id", async () => {
     const worker = loadWorker();
     await worker.dispatch("notificationclick", { notification: { close: vi.fn(), data: { assignmentId: "https://evil.example", url: "https://evil.example" } } });
-    expect(worker.clients.openWindow).toHaveBeenCalledWith("https://duepulse.example/dashboard");
+    expect(worker.clients.openWindow).toHaveBeenCalledWith("https://coursecue.example/dashboard");
   });
 });

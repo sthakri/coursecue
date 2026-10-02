@@ -26,7 +26,7 @@ function isMobileBrowser(): boolean {
 
 function hasBypassed(): boolean {
   try {
-    return sessionStorage.getItem("duepulse_install_bypass") === "true";
+    return sessionStorage.getItem("coursecue_install_bypass") === "true";
   } catch {
     return false;
   }

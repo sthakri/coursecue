@@ -4,7 +4,7 @@ import { pushEndpointSchema } from "@/lib/validations";
 
 // Initialise VAPID details once at module load, not on every send.
 webpush.setVapidDetails(
-  "mailto:admin@duepulse.app",
+  "https://github.com/sthakri/coursecue",
   env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
   env.VAPID_PRIVATE_KEY
 );
@@ -12,7 +12,7 @@ webpush.setVapidDetails(
 export async function sendPushNotification(
   subscription: webpush.PushSubscription,
   message: string,
-  title = "DuePulse",
+  title = "CourseCue",
   ttlSeconds = 24 * 60 * 60,
   assignmentId?: string,
 ): Promise<void> {

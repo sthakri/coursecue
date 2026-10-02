@@ -132,7 +132,7 @@ export default function DashboardSidebar({
                 <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
                   <Zap size={14} className="text-primary" fill="currentColor" />
                 </div>
-                <span className="font-bold text-sidebar-foreground tracking-tight">DuePulse</span>
+                <span className="font-bold text-sidebar-foreground tracking-tight">CourseCue</span>
               </Link>
               <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu" className="text-sidebar-muted hover:text-sidebar-muted bg-transparent">
                 <X size={18} />
@@ -172,7 +172,7 @@ export default function DashboardSidebar({
       >
         {/* Logo */}
         <div className="flex justify-center px-2 py-6">
-          <Link href="/dashboard" aria-label="DuePulse dashboard" title="DuePulse" className="text-sidebar-foreground">
+          <Link href="/dashboard" aria-label="CourseCue dashboard" title="CourseCue" className="text-sidebar-foreground">
             <Zap size={30} fill="currentColor" aria-hidden="true" />
           </Link>
         </div>

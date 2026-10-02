@@ -8,7 +8,7 @@ import { coerceTimezone, COMPLETED_RETENTION_DAYS } from "@/lib/time";
 import { RefreshCw } from "lucide-react";
 import { readAllPages } from "@/lib/read-all-pages";
 
-export const metadata = { title: "Assignments — DuePulse" };
+export const metadata = { title: "Assignments — CourseCue" };
 
 export default async function AssignmentsPage() {
   const supabase = await createClient();

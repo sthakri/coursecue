@@ -111,7 +111,7 @@ export default function AssignmentsClient({ assignments, hasCanvas, userTz, init
         <h3 className="font-bold text-lg">{focusedId ? "Assignment details" : filter === "completed" ? `Completed · last ${days} days` : filter === "upcoming" ? `Next ${days} days` : ASSIGNMENT_FILTERS[filter]}</h3>
         <p aria-live="polite" className="text-sm text-muted-foreground">{results.length ? `${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, results.length)} of ${results.length}` : "0 assignments"}</p>
       </div>
-      {filter === "completed" && <p className="text-sm text-muted-foreground">Dates show when DuePulse recorded completion, which may be later than your Canvas submission.</p>}
+      {filter === "completed" && <p className="text-sm text-muted-foreground">Dates show when CourseCue recorded completion, which may be later than your Canvas submission.</p>}
       {results.length ? <AssignmentGroups assignments={visible} filter={focusedId ? (visible[0]?.is_completed ? "completed" : "all") : filter} now={now} userTz={userTz} /> : <section className="rounded-sm border border-border bg-card p-8 text-center">
         <h3 className="font-bold text-lg">{focusedId ? "This assignment is no longer in your current view" : "Nothing in this view"}</h3>
         <p className="mt-2 text-sm text-muted-foreground">{focusedId ? "It may have been dismissed or moved outside recent history." : "Try another date range, search, or course. Your other assignments are still available."}</p>

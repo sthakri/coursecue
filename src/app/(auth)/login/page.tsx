@@ -107,7 +107,7 @@ export default function LoginPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft shadow-none">
               <Zap size={14} className="text-primary" fill="currentColor" />
             </div>
-            <span className="font-bold text-lg text-foreground tracking-tight">DuePulse</span>
+            <span className="font-bold text-lg text-foreground tracking-tight">CourseCue</span>
           </Link>
         </div>
 

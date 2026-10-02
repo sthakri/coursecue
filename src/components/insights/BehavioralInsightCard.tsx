@@ -18,7 +18,7 @@ export default function BehavioralInsightCard({ insights, activeSlots }: Props) 
     return (
       <div className="rounded-sm bg-card border border-border p-5">
         <h2 className="text-foreground font-semibold text-sm flex items-center gap-2">🧠 Your Focus Windows</h2>
-        <p className="text-muted-foreground text-sm mt-2">DuePulse is learning your patterns. Use the app at a few different times of day to unlock your focus profile.</p>
+        <p className="text-muted-foreground text-sm mt-2">CourseCue is learning your patterns. Use the app at a few different times of day to unlock your focus profile.</p>
         <div className="mt-4">
           <div className="w-full h-1.5 bg-surface-subtle rounded-full overflow-hidden">
             <div className="h-full bg-info rounded-full transition-all" style={{ width: `${Math.max(pct, 4)}%` }} />

@@ -8,7 +8,7 @@ import { FALLBACK_TIMEZONE } from "@/lib/time";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
-export const metadata = { title: "Settings — DuePulse" };
+export const metadata = { title: "Settings — CourseCue" };
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -32,7 +32,7 @@ export default async function SettingsPage() {
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-2xl w-full mx-auto">
         <div className="mb-6 border-b border-border pb-5">
           <h2 className="text-2xl font-semibold">Notification preferences</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Choose when to hear from DuePulse and keep your Canvas connection current.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Choose when to hear from CourseCue and keep your Canvas connection current.</p>
         </div>
         <div className="flex flex-col gap-5">
           {/* Canvas Connection */}

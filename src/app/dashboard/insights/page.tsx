@@ -6,7 +6,7 @@ import BehavioralInsightCard from "@/components/insights/BehavioralInsightCard";
 import ProductiveWindowsChart from "@/components/insights/ProductiveWindowsChart";
 import { CheckCircle2, AlertTriangle, Calendar, BookOpen, Clock, Activity } from "lucide-react";
 
-export const metadata = { title: "Insights — DuePulse" };
+export const metadata = { title: "Insights — CourseCue" };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -150,7 +150,7 @@ export default async function InsightsPage() {
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-7xl w-full mx-auto flex flex-col gap-6">
         <section className="border-b border-border pb-5">
           <h2 className="text-2xl font-semibold">Coursework & activity</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Coursework and activity recorded in DuePulse. More activity helps reveal your study rhythm.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Coursework and activity recorded in CourseCue. More activity helps reveal your study rhythm.</p>
         </section>
         {/* Top KPI strip: Real Assignment Performance */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
