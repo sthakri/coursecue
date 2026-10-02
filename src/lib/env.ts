@@ -3,6 +3,8 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    APP_URL: z.url({ protocol: /^https?$/ }).optional(),
+    VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1).optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     CANVAS_PERSONAL_TOKEN: z.string().min(1).optional(),
     CANVAS_DOMAIN: z.string().min(1),
@@ -28,6 +30,8 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
   },
   runtimeEnv: {
+    APP_URL: process.env.APP_URL,
+    VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     CANVAS_PERSONAL_TOKEN: process.env.CANVAS_PERSONAL_TOKEN,
     CANVAS_DOMAIN: process.env.CANVAS_DOMAIN,

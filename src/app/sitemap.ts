@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://duepulse.app";
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = await getSiteUrl();
 
   return [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
