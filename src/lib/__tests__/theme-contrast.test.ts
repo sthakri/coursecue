@@ -16,12 +16,12 @@ function contrast(a: number[], b: number[]) {
   const values = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (values[0] + .05) / (values[1] + .05);
 }
-describe("authored study palette", () => {
+describe("TXST Canvas palette", () => {
   it.each([
     ["foreground", "background"], ["card-foreground", "card"], ["muted-foreground", "background"],
     ["muted-foreground", "card"], ["primary", "background"], ["primary", "primary-soft"],
     ["primary-foreground", "primary"], ["primary-foreground", "primary-hover"],
-    ["sidebar-foreground", "sidebar"], ["sidebar-muted", "sidebar"], ["brand-gold", "sidebar"],
+    ["sidebar-foreground", "sidebar"], ["sidebar-muted", "sidebar"], ["info", "background"], ["info", "info-soft"], ["info-hover", "background"],
     ["sidebar-primary-foreground", "sidebar-primary"], ["destructive", "danger-soft"],
     ["success", "success-soft"], ["warning", "warning-soft"], ["primary-foreground", "success"],
   ])("keeps %s readable on %s", (text, background) => {

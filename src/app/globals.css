@@ -15,7 +15,9 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-brand-gold: var(--brand-gold);
-  --color-info: var(--primary);
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+  --color-info-soft: var(--info-soft);
   --color-danger: var(--destructive);
   --color-danger-hover: var(--danger-hover);
   --color-danger-soft: var(--danger-soft);
@@ -63,56 +65,59 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* DuePulse study palette: wine, parchment, and brass. See docs/DESIGN.md. */
+/* TXST Canvas: sampled from the user's dashboard references. See docs/DESIGN.md. */
 :root {
   color-scheme: light;
-  --background: #DDD0BD;
-  --foreground: #291D22;
-  --card: #FAF4E9;
-  --card-foreground: #291D22;
-  --popover: #FAF4E9;
-  --popover-foreground: #291D22;
-  --primary: #7D233C;
-  --primary-hover: #61172E;
-  --primary-soft: #E6C7C4;
+  --background: #FFFFFF;
+  --foreground: #273540;
+  --card: #FFFFFF;
+  --card-foreground: #273540;
+  --popover: #FFFFFF;
+  --popover-foreground: #273540;
+  --primary: #4B1610;
+  --primary-hover: #3B110C;
+  --primary-soft: #F4EBE9;
   --primary-foreground: #FFFFFF;
-  --brand-gold: #EDBF73;
-  --secondary: #E8DCCA;
-  --secondary-foreground: #291D22;
-  --surface-subtle: #E8DCCA;
-  --muted: #CFBDA7;
-  --muted-foreground: #5E4B43;
-  --accent: #E6C7C4;
-  --accent-foreground: #61172E;
-  --destructive: #9F242E;
-  --danger-hover: #7F1B25;
-  --danger-soft: #F0C3BC;
-  --warning: #704500;
-  --warning-soft: #E8CE97;
-  --success: #165E48;
-  --success-soft: #C8DDD0;
-  --overlay: #211017;
-  --border: #B8A38B;
-  --input: #806750;
-  --ring: #7D233C;
-  --chart-1: #7D233C;
-  --chart-2: #165E48;
-  --chart-3: #9F242E;
-  --chart-4: #5E4B43;
-  --chart-5: #E4DACA;
-  --chart-empty: #E4DACA;
-  --chart-low: #E4B8B1;
-  --chart-high: #7D233C;
+  --brand-gold: #E1D9CE;
+  --info: #0069B5;
+  --info-hover: #004F89;
+  --info-soft: #E0EBF5;
+  --secondary: #F2F4F4;
+  --secondary-foreground: #273540;
+  --surface-subtle: #F5F5F5;
+  --muted: #E5E7EB;
+  --muted-foreground: #526575;
+  --accent: #F2F4F4;
+  --accent-foreground: #273540;
+  --destructive: #C8102E;
+  --danger-hover: #A00D25;
+  --danger-soft: #FFF1F2;
+  --warning: #805600;
+  --warning-soft: #FFF4D6;
+  --success: #007D34;
+  --success-soft: #E8F5EC;
+  --overlay: #273540;
+  --border: #D7DADE;
+  --input: #8D959F;
+  --ring: #0069B5;
+  --chart-1: #1565A3;
+  --chart-2: #007D34;
+  --chart-3: #C8102E;
+  --chart-4: #526575;
+  --chart-5: #F2F4F4;
+  --chart-empty: #F2F4F4;
+  --chart-low: #E0EBF5;
+  --chart-high: #1565A3;
   --chart-label-dark: #000000;
   --radius: 0.5rem;
-  --sidebar: #35131D;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-muted: #E7D0C3;
-  --sidebar-primary: #EDBF73;
-  --sidebar-primary-foreground: #35131D;
-  --sidebar-accent: #552032;
+  --sidebar: #4B1610;
+  --sidebar-foreground: #E1D9CE;
+  --sidebar-muted: #E1D9CE;
+  --sidebar-primary: #FFFFFF;
+  --sidebar-primary-foreground: #4B1610;
+  --sidebar-accent: #64271F;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #865A61;
+  --sidebar-border: #75433D;
   --sidebar-ring: #FFFFFF;
 }
 
@@ -132,6 +137,10 @@
   }
   .bg-sidebar :where(button, a):focus-visible {
     outline-color: var(--sidebar-ring);
+  }
+  .bg-sidebar [aria-current="page"]:focus-visible {
+    outline-color: var(--ring);
+    outline-offset: -3px;
   }
   button:not(:disabled), select:not(:disabled) {
     cursor: pointer;
