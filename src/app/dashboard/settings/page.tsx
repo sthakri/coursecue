@@ -80,7 +80,7 @@ export default async function SettingsPage() {
           />
 
           {/* Account */}
-          <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
+          <section id="account" className="scroll-mt-24 rounded-sm bg-card border border-border p-5 sm:p-6">
             <h2 className="text-foreground font-semibold text-lg mb-4">Account</h2>
             <div>
               <p className="text-body text-sm font-medium">Email</p>

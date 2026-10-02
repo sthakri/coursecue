@@ -141,15 +141,15 @@ export default function DashboardSidebar({
             <NavItems pathname={pathname} collapsed={false} onClick={() => setMobileOpen(false)} />
             <div className="border-t border-sidebar-border">
               {email && initial && (
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-sidebar-border">
+                <Link href="/dashboard/settings#account" onClick={() => setMobileOpen(false)} aria-label="Account settings" className="flex items-center gap-3 px-4 py-3 border-b border-sidebar-border hover:bg-sidebar-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-sidebar-foreground">
                   <div className="w-7 h-7 rounded-full bg-primary-soft border border-primary/30 flex items-center justify-center text-primary font-semibold text-xs shrink-0">
                     {initial}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sidebar-foreground text-xs font-medium truncate">{email.split("@")[0]}</p>
+                    <p className="text-sidebar-foreground text-xs font-medium truncate">Account</p>
                     <p className="text-sidebar-muted text-[11px] truncate">{email}</p>
                   </div>
-                </div>
+                </Link>
               )}
               <div className="p-3">
                 <button type="button" onClick={() => { setMobileOpen(false); setShowSignOutConfirm(true); }}
@@ -192,13 +192,13 @@ export default function DashboardSidebar({
 
         {/* User info + sign out */}
         <div className="border-t border-sidebar-border">
-          {email && initial && !collapsed && (
-            <div className="flex flex-col items-center gap-1.5 px-2 py-3" title={email}>
+          {email && initial && (
+            <Link href="/dashboard/settings#account" aria-label="Account settings" className="flex flex-col items-center gap-1.5 px-2 py-3 hover:bg-sidebar-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-sidebar-foreground" title={email}>
               <div className="w-8 h-8 rounded-full border border-sidebar-muted flex items-center justify-center text-sidebar-foreground font-semibold text-sm shrink-0">
                 {initial}
               </div>
-              <p className="text-sidebar-foreground text-xs">Account</p>
-            </div>
+              {!collapsed && <p className="text-sidebar-foreground text-xs">Account</p>}
+            </Link>
           )}
           <div className="p-2">
             <button
