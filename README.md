@@ -1,8 +1,8 @@
-# DuePulse
+# CourseCue
 
 **Your Canvas assignments, organised around what comes next.**
 
-DuePulse brings Canvas coursework into one student dashboard: approaching deadlines, a searchable assignment planner, workload charts, and study reminders with AI-generated wording.
+CourseCue brings Canvas coursework into one student dashboard: approaching deadlines, a searchable assignment planner, workload charts, and study reminders with AI-generated wording.
 
 Built with **Next.js · React · TypeScript · Supabase · D3 · Trigger.dev**. The web app runs on **Vercel**; scheduled jobs run separately on **Trigger.dev**.
 
@@ -18,15 +18,15 @@ Built with **Next.js · React · TypeScript · Supabase · D3 · Trigger.dev**. 
 
 **Status:** actively evolving. The product direction is still being explored; the features above describe the current code, not a finished roadmap.
 
-Marking an assignment complete or dismissing it updates DuePulse only; it does not submit work to Canvas. Activity insights use dashboard activity scores and heuristics rather than measuring study time or predicting academic performance. Push delivery depends on device support, permission, and configured background jobs.
+Marking an assignment complete or dismissing it updates CourseCue only; it does not submit work to Canvas. Activity insights use dashboard activity scores and heuristics rather than measuring study time or predicting academic performance. Push delivery depends on device support, permission, and configured background jobs.
 
 ## Run locally
 
 Use Node.js 24 and npm. You need your own Supabase project, Upstash Redis, NVIDIA NIM credentials, Web Push keys, Trigger.dev project, and a Canvas account that allows personal access tokens. There is no bundled demo account or offline demo mode.
 
 ```sh
-git clone https://github.com/sthakri/duepulse.git
-cd duepulse
+git clone https://github.com/sthakri/coursecue.git
+cd coursecue
 npm ci
 ```
 
@@ -48,6 +48,8 @@ Create `.env.local` at the repository root with the following values. Validation
 | `NUDGE_ENABLED` | `false` until you intend to send scheduled reminders |
 
 Optional AI overrides are `NIM_BASE_URL` (default `https://integrate.api.nvidia.com/v1`) and `NIM_MODEL` (default `mistralai/mistral-nemotron`). `CANVAS_PERSONAL_TOKEN` and `CRON_SECRET` are optional legacy variables; users enter their Canvas token during onboarding. `NEXT_PUBLIC_APP_ENV` is derived from `NODE_ENV` in the environment module.
+
+Set optional `APP_URL` to your verified production origin, including `https://`, when using a custom domain. Sitemap and robots URLs prefer this value, then Vercel's `VERCEL_PROJECT_PRODUCTION_URL`, then the current request origin. No production domain is hardcoded.
 
 Generate the Web Push key pair and encryption key:
 
