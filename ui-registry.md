@@ -1,12 +1,12 @@
 # DuePulse UI registry
 
-Updated 2026-10-01. Texas State (San Marcos) Canvas theme requested by the user.
+Updated 2026-10-01. Richer DuePulse palette requested by the user; supersedes the pale Canvas treatment.
 Research, palette and implementation schema: [docs/DESIGN.md](docs/DESIGN.md).
 Runtime tokens: `src/app/globals.css`. Vendor `src/components/ui/` files remain unchanged.
 
 ## Consistency audit
 
-Public, auth, install, dashboard, assignments, insights, settings, loading, error, 404 and notification components share semantic tokens. Primary/navigation #4B1610 and ivory labels #E1D9CE match the live TXST Canvas account theme. White content, sandstone secondary surfaces and restrained gold accents replace the generic blue/charcoal theme. Imported course colors remain data accents; course names use readable neutral text.
+Public, auth, install, dashboard, assignments, insights, settings, loading, error, 404 and notification components share semantic tokens. Wine actions #7D233C, deep wine navigation #35131D, parchment background #DDD0BD, cream cards #FAF4E9 and brass #EDBF73 create a stronger visual hierarchy. Dark page headers anchor the workspace. Text contrast is regression-tested at 4.5:1 and input boundaries at 3:1. Imported course colors remain data accents; course names use readable neutral text.
 
 ### Auth brand panel
 
@@ -22,7 +22,7 @@ File: `src/components/AuthBrandPanel.tsx` · Updated 2026-10-01
 | Shadow | None |
 | Accent | `text-brand-gold`, `border-brand-gold/40` on maroon only |
 
-Shared by login and password reset. Keep content surfaces white and use the panel only at desktop widths.
+Shared by login and password reset. Keep content surfaces cream and use the panel only at desktop widths.
 
 ### Navigation
 
@@ -135,3 +135,4 @@ Files: home, features, how-it-works, install, `MobileInstallGuide.tsx`, error/lo
 Public header brand marks use `text-brand-gold` on maroon, with `bg-sidebar-accent`. Header actions use `bg-sidebar-primary text-sidebar-primary-foreground hover:bg-primary-soft`. White focus outlines keep header links visible. Body actions remain maroon with white text.
 
 PWA uses a white splash background and TXST Canvas maroon browser chrome. App icons share the authored maroon-and-white lightning SVG in `public/icons/icon.svg`.
+

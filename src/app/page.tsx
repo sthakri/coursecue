@@ -12,13 +12,13 @@ const features = [
   },
   {
     icon: Brain,
-    title: "Learns Your Brain",
-    body: "Tracks when you actually sit down and focus, then builds a model of your productive windows over time.",
+    title: "Find Your Rhythm",
+    body: "Uses your activity in DuePulse to suggest useful times to start studying. The more you use it, the clearer the pattern.",
   },
   {
     icon: Bell,
     title: "Calm Nudges",
-    body: "No spam. DuePulse nudges you exactly when you're likely to act — not just when a deadline is close.",
+    body: "Deadline reminders with quiet hours and a pause button. Overdue reminders stop after three days.",
   },
 ];
 
@@ -83,26 +83,26 @@ export default async function HomePage() {
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-center justify-center px-5 pt-20 pb-16 text-center max-w-3xl mx-auto">
+      <section className="bg-sidebar text-sidebar-foreground flex flex-col items-center justify-center px-5 pt-16 pb-16 sm:pt-20 text-center w-full border-b-4 border-brand-gold">
         {/* Eyebrow */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary-soft px-4 py-1.5 text-sm font-medium text-body">
-          <Zap size={13} className="text-primary" />
+        <div className="mb-6 inline-flex items-center gap-2 border-b border-brand-gold/50 pb-2 text-sm font-medium text-brand-gold">
+          <Zap size={13} />
           For students, by a student
         </div>
 
-        <h1 className="text-foreground font-extrabold text-5xl md:text-6xl leading-[1.05] tracking-tight max-w-2xl mb-5">
-          Your deadlines, your brain,{" "}
-          <span className="text-primary">finally in sync.</span>
+        <h1 className="font-extrabold text-4xl sm:text-5xl md:text-6xl leading-[1.05] tracking-tight max-w-2xl mb-5">
+          Less sorting.{" "}
+          <span className="text-brand-gold">More studying.</span>
         </h1>
 
-        <p className="text-body text-lg max-w-xl leading-relaxed mb-10">
-          DuePulse connects to Canvas LMS, learns when you actually focus, and
-          nudges you at exactly the right moment.
+        <p className="text-sidebar-muted text-lg max-w-xl leading-relaxed mb-8">
+          Your Canvas assignments, organised around what’s next.
+          Plan the next two weeks, clear finished work, and get reminders that know when to stop.
         </p>
 
         <Button
           asChild
-          className="bg-primary hover:bg-primary-hover text-white font-semibold px-7 py-3 text-base h-auto rounded-sm shadow-none transition-all duration-200 "
+          className="bg-sidebar-primary hover:bg-primary-soft text-sidebar-primary-foreground font-bold px-7 py-3 text-base h-auto rounded-sm shadow-none transition-colors"
         >
           <Link href="/login">Connect Your Canvas →</Link>
         </Button>

@@ -79,9 +79,11 @@ export default async function DashboardPage() {
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-7xl w-full mx-auto">
         <MobileInstallGuide />
-        <div className="mb-6 border-b border-border pb-4">
-          <h2 className="text-2xl font-bold text-foreground">Your coursework at a glance</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Plan ahead with your Canvas deadlines and weekly workload.</p>
+        <div className="mb-6 rounded-sm border-t-4 border-brand-gold bg-sidebar p-5 sm:p-7 text-sidebar-foreground">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-gold">Your study desk</p>
+          <h2 className="mt-2 text-3xl font-bold">Your week, in focus.</h2>
+          <p className="mt-2 text-sm text-sidebar-muted">{dueThisWeekCount} {dueThisWeekCount === 1 ? "assignment due" : "assignments due"} in the next 7 days. Choose what to tackle next.</p>
+          <Link href="/dashboard/assignments" className="mt-5 inline-flex min-h-11 items-center gap-3 rounded-sm bg-sidebar-primary px-4 text-sm font-bold text-sidebar-primary-foreground hover:bg-primary-soft">Open your planner <span aria-hidden="true">→</span></Link>
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
           {/* Heatmap */}
@@ -91,12 +93,12 @@ export default async function DashboardPage() {
 
           {/* Stats */}
           <div className="xl:col-span-1 flex flex-col gap-4">
-            <div className="rounded-sm bg-card border border-border p-6 shadow-none">
+            <div className="rounded-sm bg-card border border-border border-t-4 border-t-primary p-6 shadow-none">
               <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-6">Overview</p>
               <div className="flex flex-col gap-5">
                 <Link href="/dashboard/assignments?filter=all" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-sm bg-surface-subtle border border-border flex items-center justify-center shrink-0">
-                    <BookOpen size={17} className="text-muted-foreground" />
+                  <div className="w-10 h-10 rounded-sm bg-primary flex items-center justify-center shrink-0">
+                    <BookOpen size={17} className="text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-foreground font-bold text-3xl leading-none group-hover:text-primary-hover transition-colors">{totalCount}</p>
@@ -105,8 +107,8 @@ export default async function DashboardPage() {
                 </Link>
                 <div className="h-px bg-muted" />
                 <Link href="/dashboard/assignments?filter=overdue" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-sm bg-danger-soft border border-danger/20 flex items-center justify-center shrink-0">
-                    <AlertTriangle size={17} className="text-danger" />
+                  <div className="w-10 h-10 rounded-sm bg-danger flex items-center justify-center shrink-0">
+                    <AlertTriangle size={17} className="text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-danger font-bold text-3xl leading-none">{overdueCount}</p>
@@ -115,23 +117,23 @@ export default async function DashboardPage() {
                 </Link>
                 <div className="h-px bg-muted" />
                 <Link href="/dashboard/assignments?filter=this-week" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-sm bg-warning-soft border border-warning/20 flex items-center justify-center shrink-0">
-                    <CalendarClock size={17} className="text-warning" />
+                  <div className="w-10 h-10 rounded-sm bg-success flex items-center justify-center shrink-0">
+                    <CalendarClock size={17} className="text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="text-warning font-bold text-3xl leading-none">{dueThisWeekCount}</p>
+                    <p className="text-success font-bold text-3xl leading-none">{dueThisWeekCount}</p>
                     <p className="text-muted-foreground text-sm mt-1">Due this week</p>
                   </div>
                 </Link>
               </div>
             </div>
 
-            <Link href="/dashboard/insights" className="rounded-sm bg-card border border-border p-5 flex items-center justify-between group hover:border-primary/40 hover:bg-surface-subtle transition-all">
+            <Link href="/dashboard/insights" className="rounded-sm bg-success p-5 flex items-center justify-between group text-primary-foreground hover:brightness-110 transition-colors">
               <div>
-                <p className="text-foreground font-semibold text-sm">Your Focus Insights</p>
-                <p className="text-muted-foreground text-xs mt-0.5">See your productive patterns</p>
+                <p className="font-semibold text-sm">Your Focus Insights</p>
+                <p className="text-xs mt-0.5">See your productive patterns</p>
               </div>
-              <span className="text-primary text-lg group-hover:translate-x-1 transition-transform">→</span>
+              <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>

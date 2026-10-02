@@ -12,7 +12,7 @@ const lato = Lato({
 
 export const metadata: Metadata = {
   title: "DuePulse",
-  description: "Your deadlines, your brain, finally in sync.",
+  description: "Your Canvas assignments, organised around what’s next. Plan your coursework and get reminders that know when to stop.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        <meta name="theme-color" content="#4B1610" />
+        <meta name="theme-color" content="#35131D" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"

@@ -30,6 +30,11 @@ export default async function SettingsPage() {
       </header>
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-2xl w-full mx-auto">
+        <div className="mb-6 rounded-sm border-t-4 border-brand-gold bg-sidebar p-5 sm:p-6 text-sidebar-foreground">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-gold">Make it yours</p>
+          <h2 className="mt-2 text-2xl font-bold">A rhythm that works for you.</h2>
+          <p className="mt-2 text-sm text-sidebar-muted">Choose when to hear from DuePulse and keep your Canvas connection current.</p>
+        </div>
         <div className="flex flex-col gap-5">
           {/* Canvas Connection */}
           <section className="rounded-sm bg-card border border-border p-5 sm:p-6">

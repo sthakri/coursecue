@@ -41,7 +41,7 @@ function formatHour(hour: number): string {
 const FREQUENCIES = [
   { value: "aggressive", label: "Aggressive", desc: "Nudge at every productive window" },
   { value: "normal", label: "Normal", desc: "Max once per day during productive hours" },
-  { value: "minimal", label: "Minimal", desc: "Only for deadline reminders within 24 hours" },
+  { value: "minimal", label: "Minimal", desc: "Deadline reminders and overdue follow-ups for up to 3 days" },
 ] as const;
 
 const PAUSE_DURATIONS = [
@@ -52,8 +52,8 @@ const PAUSE_DURATIONS = [
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
-      <h2 className="text-foreground font-semibold text-base mb-4">{title}</h2>
+    <section className="rounded-sm bg-card border border-border border-t-4 border-t-primary p-5 sm:p-6">
+      <h2 className="text-primary font-bold text-lg mb-4">{title}</h2>
       {children}
     </section>
   );

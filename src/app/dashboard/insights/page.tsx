@@ -148,6 +148,11 @@ export default async function InsightsPage() {
       </header>
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-7xl w-full mx-auto flex flex-col gap-6">
+        <section className="rounded-sm border-t-4 border-brand-gold bg-sidebar p-5 sm:p-6 text-sidebar-foreground">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-gold">Your patterns</p>
+          <h2 className="mt-2 text-2xl font-bold">See how your weeks take shape.</h2>
+          <p className="mt-2 text-sm text-sidebar-muted">Coursework and activity recorded in DuePulse. More activity helps reveal your study rhythm.</p>
+        </section>
         {/* Top KPI strip: Real Assignment Performance */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="rounded-sm bg-card border border-border p-5">
