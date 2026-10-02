@@ -30,13 +30,11 @@ type ExistingRow = {
 
 /**
  * Pure planning step for a sync run (exported for tests):
- * - `rows`: upsert payload. Dismissed rows are excluded (kept hidden or
- *   deleted below). Sticky completion: once done (locally or per Canvas),
+ * - `rows`: upsert payload. Dismissed records stay stored and hidden so a
+ *   later Canvas sync cannot recreate them. Once done (locally or per Canvas),
  *   stays done. When Canvas is what flips an existing row to completed,
  *   updated_at is stamped — the "recently completed" page filter keys off
  *   updated_at, and sync upserts otherwise never touch it.
- * - `toDeleteIds`: dismissed rows Canvas now reports submitted — the user
- *   dismissed them and Canvas is source of truth, so drop them entirely.
  */
 export function buildSyncPlan(
   assignments: Awaited<ReturnType<typeof getCanvasAssignments>>,
@@ -44,7 +42,7 @@ export function buildSyncPlan(
   courseMap: Map<number, string>,
   userId: string,
   nowIso: string,
-): { rows: TablesInsert<"assignments">[]; toDeleteIds: string[] } {
+): { rows: TablesInsert<"assignments">[] } {
   const dismissedIdMap = new Map(
     existingRows
       .filter((r) => r.dismissed_at !== null)
@@ -55,13 +53,6 @@ export function buildSyncPlan(
       .filter((r) => r.is_completed)
       .map((r) => r.canvas_assignment_id)
   );
-
-  const toDeleteIds: string[] = [];
-  for (const a of assignments) {
-    if (a.is_completed && dismissedIdMap.has(a.canvas_assignment_id)) {
-      toDeleteIds.push(dismissedIdMap.get(a.canvas_assignment_id)!);
-    }
-  }
 
   const existingByCanvasId = new Map(
     existingRows.map((r) => [r.canvas_assignment_id, r])
@@ -90,7 +81,7 @@ export function buildSyncPlan(
   // sync. Last write wins, mirroring plain upsert semantics.
   const deduped = [...new Map(rows.map((r) => [r.canvas_assignment_id, r])).values()];
 
-  return { rows: deduped, toDeleteIds };
+  return { rows: deduped };
 }
 
 /**
@@ -214,7 +205,7 @@ export async function syncUserCanvas(
     );
 
     // Fetch existing rows so the planner can (a) keep dismissed rows hidden,
-    // (b) delete dismissed rows Canvas now reports submitted, (c) preserve
+    // (b) preserve
     // locally-marked completions Canvas can't see (offline/paper submissions),
     // (d) stamp updated_at when Canvas is what flips a row to completed.
     const incomingCanvasIds = assignments.map((a) => a.canvas_assignment_id);
@@ -225,21 +216,13 @@ export async function syncUserCanvas(
       .in("canvas_assignment_id", incomingCanvasIds)
       .throwOnError();
 
-    const { rows, toDeleteIds } = buildSyncPlan(
+    const { rows } = buildSyncPlan(
       assignments,
       existingRows ?? [],
       courseMap,
       userId,
       new Date().toISOString()
     );
-
-    if (toDeleteIds.length > 0) {
-      await serviceClient
-        .from("assignments")
-        .delete()
-        .in("id", toDeleteIds)
-        .throwOnError();
-    }
 
     if (rows.length > 0) {
       for (const batch of partitionForUpsert(rows)) {

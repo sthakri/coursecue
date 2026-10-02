@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr"
 import { env } from "@/lib/env"
 import { generateProductiveWindowNudge } from "@/lib/nim"
 import { sendPushNotification } from "@/lib/webpush"
-import { getLocalHour, getLocalDay, getDefaultTimezone, formatClockTime, coerceTimezone, COMPLETED_RETENTION_DAYS } from "@/lib/time"
+import { getLocalHour, getLocalDay, getDefaultTimezone, formatClockTime, coerceTimezone } from "@/lib/time"
 import {
   pickDeadlineThreshold,
   formatRemaining,
@@ -442,24 +442,8 @@ export const nudgeEngine = schedules.task({
     }
     console.log(`[nudge-engine] Section B done: deadline_sent=${deadlineSent}`)
 
-    // ── Section C: Cleanup completed assignments ──────────────────────────────
-    // Hard-delete assignments marked completed more than COMPLETED_RETENTION_DAYS
-    // (14) ago — MUST match the "recently completed" window on the dashboard
-    // pages, or Completed tabs and Insights completion stats silently decay.
-    // nudge_logs cascade-deletes via FK, so no orphan cleanup needed.
-    const retentionCutoff = new Date(now.getTime() - COMPLETED_RETENTION_DAYS * 24 * 60 * 60 * 1000)
-    let cleanedUp = 0
-    try {
-      const { count } = await serviceClient
-        .from("assignments")
-        .delete({ count: "exact" })
-        .eq("is_completed", true)
-        .lt("updated_at", retentionCutoff.toISOString())
-      cleanedUp = count ?? 0
-      console.log(`[nudge-engine] Section C: deleted ${cleanedUp} completed assignment(s) older than ${COMPLETED_RETENTION_DAYS} days`)
-    } catch (err) {
-      console.error("[nudge-engine] Section C cleanup error:", err)
-    }
+    // Keep completion records: they preserve local decisions across Canvas sync.
+    // Pages limit visible history without deleting these records or nudge logs.
 
     // ── Section D: Overdue reminders ──────────────────────────────────────────
     // One nudge per 24h for the first 72h after the deadline, stopping earlier
@@ -600,7 +584,6 @@ export const nudgeEngine = schedules.task({
     return {
       productive_window_sent: productiveWindowSent,
       deadline_sent: deadlineSent,
-      cleaned_up: cleanedUp,
       overdue_sent: overdueSent,
     }
   },

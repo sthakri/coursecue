@@ -6,11 +6,8 @@ const DAY_NAMES: Record<string, number> = {
 // ponytail: hardcoded fallback — revert to per-request tz detection only if users outside US show up.
 export const FALLBACK_TIMEZONE = "America/Chicago";
 
-/** Completed assignments are kept visible this long, then hard-deleted.
- *  Single source of truth — the pages' "recently completed" window and the
- *  nudge-engine cleanup must agree or completed items/lifetime stats lie.
- *  30 days: matches the Insights analytics window, which reads completed
- *  rows — a shorter retention made Insights completion stats decay early. */
+/** Maximum recent-history display window. Completion records stay stored:
+ *  deleting them allows Canvas sync to recreate locally completed work. */
 export const COMPLETED_RETENTION_DAYS = 30;
 
 export function getDefaultTimezone(): string {

@@ -69,28 +69,26 @@ describe("buildSyncPlan", () => {
     expect(rows[0].updated_at).toBeUndefined();
   });
 
-  it("deletes dismissed rows that Canvas now reports submitted", () => {
-    const { rows, toDeleteIds } = buildSyncPlan(
+  it("keeps dismissed records when Canvas reports submitted so they cannot reappear", () => {
+    const plan = buildSyncPlan(
       [incoming({ canvas_assignment_id: 1, is_completed: true })],
       [existing({ canvas_assignment_id: 1, dismissed_at: NOW })],
       courseMap,
       USER,
       NOW
     );
-    expect(rows).toHaveLength(0);
-    expect(toDeleteIds).toEqual(["row-1"]);
+    expect(plan).toEqual({ rows: [] });
   });
 
   it("keeps dismissed-but-still-incomplete rows hidden (no re-upsert, no delete)", () => {
-    const { rows, toDeleteIds } = buildSyncPlan(
+    const plan = buildSyncPlan(
       [incoming({ canvas_assignment_id: 1, is_completed: false })],
       [existing({ canvas_assignment_id: 1, dismissed_at: NOW })],
       courseMap,
       USER,
       NOW
     );
-    expect(rows).toHaveLength(0);
-    expect(toDeleteIds).toHaveLength(0);
+    expect(plan).toEqual({ rows: [] });
   });
 
   it("drops rows whose course failed to upsert (no DB course id)", () => {
