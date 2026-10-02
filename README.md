@@ -13,7 +13,7 @@ A smart assignment planner for Canvas LMS users. DuePulse syncs your assignments
 ## Architecture
 
 ```
-Canvas API → Supabase → Trigger.dev (Hourly Jobs) → Web Push
+Canvas API → Supabase → Trigger.dev (Scheduled Jobs) → Web Push
                 ↓
          D3 Dashboard
 ```
@@ -35,27 +35,21 @@ Canvas API → Supabase → Trigger.dev (Hourly Jobs) → Web Push
 
 ## Project Structure
 
-```
+```text
 duepulse/
-├── app/                       # Next.js App Router
-│   ├── (auth)/                # Login + onboarding
-│   ├── api/                   # API routes (Canvas, nudge, push, stress)
-│   ├── dashboard/             # Main app pages
-│   ├── features/              # Marketing pages
-│   └── install/               # PWA install guide
-├── components/                # React components
-│   ├── ui/                    # shadcn/ui primitives
-│   └── *.tsx                  # Feature components
-├── lib/                       # Business logic
-│   ├── supabase/              # Database clients
-│   ├── canvas.ts              # Canvas API
-│   ├── nim.ts                 # AI integration
-│   └── *.ts                   # Utilities
-├── trigger/                   # Background jobs
-├── supabase/                  # Schema + migrations
-├── public/                    # Static assets (icons, manifest)
-├── worker/                    # Push notification handler
-└── *.config.ts                # Build configs
+|-- src/
+|   |-- app/                 # Pages, auth, dashboard and API routes
+|   |-- components/          # Feature components; ui/ holds vendor primitives
+|   |   `-- assignments/     # Date-grouped planner presentation
+|   |-- lib/                 # Validation, planner rules, Canvas and data helpers
+|   |   |-- __tests__/       # Unit and regression tests
+|   |   `-- supabase/        # Browser/server database clients
+|   `-- trigger/             # Canvas sync and notification jobs
+|-- supabase/                # Schema and migrations
+|-- public/                  # Icons, manifest and generated PWA assets
+|-- worker/                  # Push notification click handler
+|-- ui-registry.md           # Shared visual patterns
+`-- *.config.ts              # Build and test configuration
 ```
 
 ## Development
@@ -82,3 +76,24 @@ npm test
 Requires: Supabase project, Canvas developer token, NVIDIA NIM API key, VAPID keys, Upstash Redis, Trigger.dev account.
 
 See `supabase/schema.sql` for database setup.
+
+## Planner behavior
+
+- Next up defaults to the next 14 days, with 7/14/30-day choices. All open and No due date keep other work accessible.
+- Completed defaults to 7 days, with 14/30-day history choices. Dates use when DuePulse recorded completion, which may differ from the Canvas submission time.
+- Search and course filters combine with each view. Date groups and 20-row pages keep long lists manageable; view settings stay in the URL.
+- Overdue reminders are eligible only during the first 72 hours after the deadline, at most once per day. Quiet hours and notification preferences still apply. Older overdue work remains accessible in a collapsed group.
+- Mark complete and Dismiss update DuePulse only. They do not submit work to Canvas. Both states survive sync; history windows hide old entries without deleting their state.
+- Dashboard counts and the planner read all database result pages rather than silently truncating at the default API row limit.
+
+## Deploying background changes
+
+Canvas sync runs every 30 minutes; the nudge engine checks every 15 minutes. They run on Trigger.dev separately from the web app. A Git push alone does not deploy these jobs.
+
+After tests, lint and production build pass, deploy with the CLI matching the installed SDK:
+
+```sh
+npx trigger.dev@4.6.3 deploy
+```
+
+An authenticated Trigger.dev CLI and the project's production environment variables are required. Verify the deployed task versions and scheduled runs in Trigger.dev before treating notification changes as live.
