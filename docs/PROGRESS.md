@@ -131,3 +131,11 @@ If `ENCRYPTION_KEY` needs to change:
 ## Upcoming Sessions (v1.1 — post-launch)
 
 - Session 17: Soft Launch Prep + Analytics
+
+## October 1, 2026 — UX refinement delivered
+
+Six separate commits pushed through 5767938: three-day overdue limit and bounded push TTL; actionable assignment notification links and completion/dismissal controls; preserved completion/dismissal state across Canvas sync; date-grouped planner with 7/14/30-day windows, URL filters, 20-row pagination and complete database paging; richer wine/parchment/brass palette with contrast regressions; corrected repository guide.
+
+Verification: 185 tests, ESLint and webpack production build pass. Local isolated browser verified filters, counts, pagination, older-overdue disclosure, responsive layouts and zero console errors. Synthetic preview route removed before build; no sample data shipped. Authenticated production mutations and device notification delivery have not been exercised. Trigger.dev deployment is separate from Git push and must be confirmed before claiming the new reminder behavior is live.
+
+Production follow-up: with explicit user approval, Trigger.dev deployment e7rmvuba completed successfully as production version 20261002.1. The new background code is deployed; real device notification delivery remains unverified.
