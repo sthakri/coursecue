@@ -1,190 +1,128 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import AssignmentCard from "@/components/AssignmentCard";
+import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import SyncNowButton from "@/components/SyncNowButton";
-import { BookOpen, RefreshCw } from "lucide-react";
+import AssignmentGroups from "@/components/assignments/AssignmentGroups";
+import { ASSIGNMENT_FILTERS, parseAssignmentFilter, selectAssignments, type AssignmentFilter, type PlannerAssignment } from "@/lib/assignment-view";
+import { ArrowRight, Search } from "lucide-react";
 
-type Course = { name: string; color: string };
-type Assignment = {
-  id: string;
-  title: string;
-  due_at: string | null;
-  points_possible: number | null;
-  canvas_assignment_id: number;
-  course_id: string;
-  courses: Course | null;
-  is_completed?: boolean;
-};
-type Filter = "all" | "overdue" | "due-soon" | "this-week" | "upcoming" | "no-date" | "completed";
+const PAGE_SIZE = 20;
+const PRIMARY_FILTERS: AssignmentFilter[] = ["upcoming", "overdue", "completed", "all", "no-date"];
 
-interface Props { assignments: Assignment[]; hasCanvas: boolean; userTz: string }
+export default function AssignmentsClient({ assignments, hasCanvas, userTz, initialNow }: {
+  assignments: PlannerAssignment[]; hasCanvas: boolean; userTz: string; initialNow: string;
+}) {
+  const params = useSearchParams();
+  const pathname = usePathname();
+  const filter = parseAssignmentFilter(params.get("filter"));
+  const focusedId = params.get("assignment");
+  const course = params.get("course") ?? "";
+  const search = params.get("q") ?? "";
+  const rangeKey = filter === "completed" ? "history" : "ahead";
+  const requestedDays = Number(params.get(rangeKey));
+  const days = [7, 14, 30].includes(requestedDays) ? requestedDays : filter === "completed" ? 7 : 14;
+  const [clock, setNow] = useState(() => Date.parse(initialNow));
+  const now = Math.max(clock, Date.parse(initialNow));
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const courses = [...new Map(assignments.filter(a => a.courses).map(a => [a.course_id, a.courses!])).entries()]
+    .sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const options = { filter, days, now, course, search };
+  const results = focusedId ? assignments.filter(a => a.id === focusedId) : selectAssignments(assignments, options);
+  const pages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
+  const requestedPage = Number(params.get("page"));
+  const page = Math.min(pages, Math.max(1, Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1));
+  const visible = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const overdueCount = selectAssignments(assignments, { ...options, filter: "overdue" }).length;
+  const tabs = PRIMARY_FILTERS.includes(filter) ? PRIMARY_FILTERS : [...PRIMARY_FILTERS, filter];
 
-function classifyAssignment(a: Assignment): Filter {
-  if (a.is_completed) return "completed";
-  if (!a.due_at) return "no-date";
-  const now = new Date();
-  const due = new Date(a.due_at);
-  const ms = due.getTime() - now.getTime();
-  if (ms < 0) return "overdue";
-  if (ms <= 24 * 60 * 60 * 1000) return "due-soon";
-  return "upcoming";
-}
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-/** The dashboard "Due this week" stat is [now, now+7d] — keep identical here. */
-function isDueThisWeek(a: Assignment): boolean {
-  if (a.is_completed || !a.due_at) return false;
-  const ms = new Date(a.due_at).getTime() - Date.now();
-  return ms >= 0 && ms <= WEEK_MS;
-}
-
-const FILTER_LABELS: Record<Filter, string> = {
-  all: "All",
-  overdue: "Overdue",
-  "due-soon": "Due Soon",
-  "this-week": "This Week",
-  upcoming: "Upcoming",
-  "no-date": "No Date",
-  completed: "Completed",
-};
-const FILTER_COLORS: Record<Filter, string> = {
-  all: "",
-  overdue: "text-danger",
-  "due-soon": "text-warning",
-  "this-week": "text-warning",
-  upcoming: "text-success",
-  "no-date": "text-muted-foreground",
-  completed: "text-success",
-};
-
-export default function AssignmentsClient({ assignments, hasCanvas, userTz }: Props) {
-  const searchParams = useSearchParams();
-  const focusedId = searchParams.get("assignment");
-  const urlFilter = searchParams.get("filter") as Filter | null;
-  const isValidFilter = urlFilter && ["all", "overdue", "due-soon", "this-week", "upcoming", "no-date", "completed"].includes(urlFilter);
-  const [activeFilter, setActiveFilter] = useState<Filter>(isValidFilter ? urlFilter : "all");
-  const [activeCourse, setActiveCourse] = useState<string | null>(null);
-
-  const courses = Array.from(
-    new Map(assignments.filter((a) => a.courses).map((a) => [a.course_id, a.courses!])).entries()
-  ).map(([id, course]) => ({ id, ...course }));
-
-  const activeAssignments = assignments.filter((a) => !a.is_completed);
-  const counts: Record<Filter, number> = {
-    all: activeAssignments.length,
-    overdue: 0,
-    "due-soon": 0,
-    "this-week": 0,
-    upcoming: 0,
-    "no-date": 0,
-    completed: 0,
-  };
-  for (const a of assignments) {
-    counts[classifyAssignment(a)]++;
-    if (isDueThisWeek(a)) counts["this-week"]++;
+  function update(values: Record<string, string>, replace = false) {
+    const next = new URLSearchParams(params.toString());
+    next.delete("page");
+    next.delete("assignment");
+    for (const [key, value] of Object.entries(values)) {
+      if (value) next.set(key, value); else next.delete(key);
+    }
+    window.history[replace ? "replaceState" : "pushState"](null, "", `${pathname}?${next}`);
   }
 
-  const filtered = assignments.filter((a) => {
-    if (focusedId) return a.id === focusedId;
-    let matchesFilter = false;
-    if (activeFilter === "all") {
-      matchesFilter = !a.is_completed;
-    } else if (activeFilter === "completed") {
-      matchesFilter = !!a.is_completed;
-    } else if (activeFilter === "this-week") {
-      matchesFilter = isDueThisWeek(a);
-    } else {
-      matchesFilter = !a.is_completed && classifyAssignment(a) === activeFilter;
-    }
-    const matchesCourse = !activeCourse || a.course_id === activeCourse;
-    return matchesFilter && matchesCourse;
-  });
-
   if (!hasCanvas) return (
-    <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-16 h-16 rounded-sm bg-surface-subtle border border-border flex items-center justify-center mb-5"><BookOpen size={26} className="text-muted-foreground" /></div>
-      <h2 className="text-foreground font-bold text-xl mb-2">Connect Canvas first</h2>
-      <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">Go to Settings and add your Canvas domain and API token to start pulling in your assignments.</p>
-      <a href="/dashboard/settings" className="rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-5 py-2.5 transition-colors">Go to Settings</a>
-    </div>
+    <section className="rounded-sm border border-border bg-card p-8 text-center">
+      <h2 className="text-xl font-bold">Connect your coursework</h2>
+      <p className="mt-2 text-muted-foreground">Add your Canvas connection in Settings to see your real assignments here.</p>
+      <Link href="/dashboard/settings" className="mt-5 inline-flex min-h-11 items-center rounded-sm bg-primary px-5 font-bold text-primary-foreground">Connect Canvas</Link>
+    </section>
   );
-
-  if (assignments.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-16 h-16 rounded-sm bg-surface-subtle border border-border flex items-center justify-center mb-5"><RefreshCw size={24} className="text-muted-foreground" /></div>
-      <h2 className="text-foreground font-bold text-xl mb-2">No assignments yet</h2>
-      <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">Sync your Canvas account to load your assignments.</p>
+  if (!assignments.length) return (
+    <section className="rounded-sm border border-border bg-card p-8 text-center">
+      <h2 className="text-xl font-bold">No assignments to show</h2>
+      <p className="my-3 text-muted-foreground">Sync Canvas to check for new work. Completed history covers the last 30 days.</p>
       <SyncNowButton />
-    </div>
+    </section>
   );
 
   return (
-    <div className="flex flex-col gap-5">
-      {focusedId && <a href="/dashboard/assignments" className="text-primary font-semibold underline">Back to all assignments</a>}
-      {/* Filter tabs */}
-      <div className="flex items-center gap-1 flex-wrap">
-        {(Object.keys(FILTER_LABELS) as Filter[]).map((f) => {
-          const count = counts[f];
-          // Never hide the ACTIVE tab — landing on ?filter=overdue with zero
-          // overdue would otherwise render no selected tab at all.
-          if (f !== "all" && count === 0 && f !== activeFilter) return null;
-          const isActive = activeFilter === f;
-          return (
-            <button key={f} type="button" aria-pressed={isActive} onClick={() => setActiveFilter(f)}
-              className={`flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm font-medium transition-all border ${isActive ? "bg-primary-soft border-primary/25 text-primary" : "bg-card border-border text-muted-foreground hover:text-muted-foreground hover:bg-card"}`}>
-              <span className={isActive ? "text-primary" : FILTER_COLORS[f]}>{FILTER_LABELS[f]}</span>
-              <span className={`text-xs rounded-md px-1.5 py-0.5 ${isActive ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground"}`}>{count}</span>
-            </button>
-          );
-        })}
+    <div className="space-y-6">
+      <section className="rounded-sm bg-sidebar p-5 sm:p-6 text-sidebar-foreground border-t-4 border-brand-gold">
+        <p className="text-brand-gold text-xs font-bold uppercase tracking-widest">Your coursework</p>
+        <h2 className="mt-2 text-2xl sm:text-3xl font-bold">{focusedId ? "Review this assignment" : filter === "completed" ? "Make room for what’s next." : "One deadline at a time."}</h2>
+        <p className="mt-2 text-sm text-sidebar-muted">{filter === "completed" ? "Choose how much of your completed work to see." : "A focused view of your Canvas assignments, with room to look ahead."}</p>
+      </section>
+
+      {focusedId ? <button type="button" onClick={() => update({})} className="min-h-11 text-primary font-bold underline">Back to assignments</button> : <>
+        <nav aria-label="Assignment views" className="flex flex-wrap gap-2">
+          {tabs.map(tab => {
+            const key = tab === "completed" ? "history" : "ahead";
+            const requested = Number(params.get(key));
+            const tabDays = [7, 14, 30].includes(requested) ? requested : tab === "completed" ? 7 : 14;
+            const count = selectAssignments(assignments, { ...options, days: tabDays, filter: tab }).length;
+            return <button key={tab} type="button" aria-pressed={filter === tab} onClick={() => update({ filter: tab })}
+              className={`min-h-11 inline-flex items-center gap-2 rounded-sm border px-3 py-2 text-sm font-bold transition-colors ${filter === tab ? "bg-primary border-primary text-primary-foreground" : "bg-card border-input text-foreground hover:bg-muted"}`}>
+              {ASSIGNMENT_FILTERS[tab]} <span className="text-xs tabular-nums">{count}</span>
+            </button>;
+          })}
+        </nav>
+        <div className="grid gap-3 rounded-sm border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="text-sm font-semibold">Search assignments
+            <span className="mt-1.5 flex items-center gap-2 rounded-sm border border-input bg-background px-3"><Search size={16} aria-hidden="true" />
+              <input value={search} onChange={e => update({ q: e.target.value }, true)} placeholder="Title or course name" className="min-h-11 min-w-0 w-full bg-transparent text-sm font-normal" />
+            </span>
+          </label>
+          <label className="text-sm font-semibold">Course
+            <select value={course} onChange={e => update({ course: e.target.value })} className="mt-1.5 min-h-11 w-full rounded-sm border border-input bg-background px-3 text-sm font-normal">
+              <option value="">All courses</option>{courses.map(([id, c]) => <option key={id} value={id}>{c.name}</option>)}
+            </select>
+          </label>
+          {(filter === "upcoming" || filter === "completed") && <label className="text-sm font-semibold">{filter === "completed" ? "Completed history" : "Look ahead"}
+            <select value={days} onChange={e => update({ [rangeKey]: e.target.value })} className="mt-1.5 min-h-11 w-full rounded-sm border border-input bg-background px-3 text-sm font-normal">
+              {[7, 14, 30].map(d => <option key={d} value={d}>{filter === "completed" ? "Last" : "Next"} {d} days</option>)}
+            </select>
+          </label>}
+        </div>
+        {filter === "upcoming" && overdueCount > 0 && <button type="button" onClick={() => update({ filter: "overdue" })} className="flex w-full items-center justify-between gap-3 rounded-sm border-l-4 border-danger bg-danger-soft p-4 text-left text-danger">
+          <span><strong>{overdueCount} overdue {overdueCount === 1 ? "assignment" : "assignments"}</strong><span className="block text-sm mt-1">Review, mark complete, or dismiss. Reminders stop after 3 days.</span></span><ArrowRight size={20} className="shrink-0" />
+        </button>}
+      </>}
+
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+        <h3 className="font-bold text-lg">{focusedId ? "Assignment details" : filter === "completed" ? `Completed · last ${days} days` : filter === "upcoming" ? `Next ${days} days` : ASSIGNMENT_FILTERS[filter]}</h3>
+        <p aria-live="polite" className="text-sm text-muted-foreground">{results.length ? `${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, results.length)} of ${results.length}` : "0 assignments"}</p>
       </div>
-
-      {/* Course pills */}
-      {courses.length > 1 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-muted-foreground text-xs">Course:</span>
-          <button type="button" aria-pressed={!activeCourse} onClick={() => setActiveCourse(null)}
-            className={`rounded-sm px-2.5 py-1 text-xs font-medium border transition-colors ${!activeCourse ? "bg-primary-soft border-primary/25 text-primary" : "bg-card border-border text-muted-foreground hover:text-muted-foreground"}`}>
-            All
-          </button>
-          {courses.map(({ id, name, color }) => (
-            <button key={id} type="button" aria-pressed={activeCourse === id} onClick={() => setActiveCourse(activeCourse === id ? null : id)}
-              className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium border transition-colors ${activeCourse === id ? "bg-primary-soft border-primary text-foreground" : "bg-card border-border text-muted-foreground hover:bg-surface-subtle"}`}>
-              <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} aria-hidden="true" />
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Results */}
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-foreground font-semibold text-base mb-1">No assignments match this filter</p>
-          <p className="text-muted-foreground text-sm">Try selecting a different filter above.</p>
-          <button type="button" onClick={() => { setActiveFilter("all"); setActiveCourse(null); }} className="mt-4 text-primary hover:text-primary-hover text-sm font-medium transition-colors bg-transparent">Clear filters</button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((a) => (
-            <AssignmentCard
-              key={a.id}
-              id={a.id}
-              title={a.title}
-              course_name={a.courses?.name ?? "Unknown Course"}
-              due_at={a.due_at}
-              points_possible={a.points_possible !== null ? Number(a.points_possible) : null}
-              canvas_assignment_id={String(a.canvas_assignment_id)}
-              course_color={a.courses?.color ?? "var(--primary)"}
-              userTz={userTz}
-              is_completed={a.is_completed ?? false}
-            />
-          ))}
-        </div>
-      )}
+      {filter === "completed" && <p className="text-sm text-muted-foreground">Dates show when DuePulse recorded completion, which may be later than your Canvas submission.</p>}
+      {results.length ? <AssignmentGroups assignments={visible} filter={focusedId ? (visible[0]?.is_completed ? "completed" : "all") : filter} now={now} userTz={userTz} /> : <section className="rounded-sm border border-border bg-card p-8 text-center">
+        <h3 className="font-bold text-lg">{focusedId ? "This assignment is no longer in your current view" : "Nothing in this view"}</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{focusedId ? "It may have been dismissed or moved outside recent history." : "Try another date range, search, or course. Your other assignments are still available."}</p>
+        <button type="button" onClick={() => update({ filter: "all", q: "", course: "" })} className="mt-4 min-h-11 rounded-sm bg-primary px-4 text-sm font-bold text-primary-foreground">View all open work</button>
+      </section>}
+      {pages > 1 && <nav aria-label="Assignment pages" className="flex items-center justify-between gap-3">
+        <button type="button" disabled={page === 1} onClick={() => update({ page: String(page - 1) })} className="min-h-11 rounded-sm border border-input bg-card px-4 font-semibold disabled:opacity-40">Previous</button>
+        <span className="text-sm">Page {page} of {pages}</span>
+        <button type="button" disabled={page === pages} onClick={() => update({ page: String(page + 1) })} className="min-h-11 rounded-sm bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-40">Next</button>
+      </nav>}
     </div>
   );
 }

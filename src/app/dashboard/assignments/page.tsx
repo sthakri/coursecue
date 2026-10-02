@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import StressAlert from "@/components/StressAlert";
 import SyncNowButton from "@/components/SyncNowButton";
 import AssignmentsClient from "@/components/AssignmentsClient";
-import { getDefaultTimezone, COMPLETED_RETENTION_DAYS } from "@/lib/time";
+import { coerceTimezone, COMPLETED_RETENTION_DAYS } from "@/lib/time";
 import { RefreshCw } from "lucide-react";
+import { readAllPages } from "@/lib/read-all-pages";
 
 export const metadata = { title: "Assignments — DuePulse" };
 
@@ -16,27 +17,25 @@ export default async function AssignmentsPage() {
 
   const userId = user.id;
   const now = new Date();
-  // This window MUST match the nudge-engine cleanup (COMPLETED_RETENTION_DAYS)
-  // — if the engine deletes completed rows sooner than this, the Completed
-  // tab and Insights completion stats silently shrink.
+  // Limit visible history while retaining stored completion decisions.
   const completedCutoff = new Date(now.getTime() - COMPLETED_RETENTION_DAYS * 24 * 60 * 60 * 1000);
   // Every incomplete assignment (any due date — old overdue ones must stay
   // visible so the overdue filter can't silently undercount) plus completed
   // rows touched in the retention window. updated_at moves on manual toggles
   // (complete route) and on Canvas-detected completions (canvas-sync), so
   // "recently completed" is honest both ways.
-  const [{ data: assignments }, { data: profile }] = await Promise.all([
-    supabase
+  const [assignments, { data: profile }] = await Promise.all([
+    readAllPages((from, to) => supabase
       .from("assignments")
-      .select("id, title, due_at, points_possible, canvas_assignment_id, course_id, is_completed, courses(name, color)")
+      .select("id, title, due_at, updated_at, points_possible, canvas_assignment_id, course_id, is_completed, courses(name, color)")
       .eq("user_id", userId)
       .is("dismissed_at", null)
       .or(`is_completed.eq.false,and(is_completed.eq.true,updated_at.gte.${completedCutoff.toISOString()})`)
-      .order("due_at", { ascending: true, nullsFirst: false }),
-    supabase.from("profiles").select("canvas_token, canvas_domain, timezone, last_synced_at").eq("id", userId).single(),
+      .order("due_at", { ascending: true, nullsFirst: false }).order("id").range(from, to)),
+    supabase.from("profiles").select("canvas_token, canvas_domain, timezone, last_synced_at").eq("id", userId).single().throwOnError(),
   ]);
 
-  const userTz = profile?.timezone ?? getDefaultTimezone();
+  const userTz = coerceTimezone(profile?.timezone);
   const hasCanvas = !!(profile?.canvas_token && profile?.canvas_domain);
 
   const lastSynced = profile?.last_synced_at ? (() => {
@@ -75,7 +74,7 @@ export default async function AssignmentsPage() {
           <StressAlert userId={userId} />
         </div>
         <Suspense>
-          <AssignmentsClient assignments={normalised} hasCanvas={hasCanvas} userTz={userTz} />
+          <AssignmentsClient assignments={normalised} hasCanvas={hasCanvas} userTz={userTz} initialNow={now.toISOString()} />
         </Suspense>
       </main>
     </>

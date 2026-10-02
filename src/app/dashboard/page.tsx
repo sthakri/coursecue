@@ -7,6 +7,7 @@ import MobileInstallGuide from "@/components/MobileInstallGuide";
 import { getLocalDate, getDefaultTimezone } from "@/lib/time";
 import { BookOpen, AlertTriangle, CalendarClock, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { readAllPages } from "@/lib/read-all-pages";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -19,13 +20,13 @@ export default async function DashboardPage() {
   // every stat on this page (overdue with no floor, 6-week heatmap) needs
   // the full set. Clipping here is what silently hid old overdue items and
   // zeroed out weeks 3–6 of the heatmap.
-  const [{ data: assignments }, { data: profile }] = await Promise.all([
-    supabase
+  const [assignments, { data: profile }] = await Promise.all([
+    readAllPages((from, to) => supabase
       .from("assignments")
       .select("due_at")
       .eq("user_id", userId)
       .eq("is_completed", false)
-      .is("dismissed_at", null),
+      .is("dismissed_at", null).order("id").range(from, to)),
     supabase.from("profiles").select("canvas_token, canvas_domain, timezone, last_synced_at").eq("id", userId).single(),
   ]);
 
@@ -93,7 +94,7 @@ export default async function DashboardPage() {
             <div className="rounded-sm bg-card border border-border p-6 shadow-none">
               <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-6">Overview</p>
               <div className="flex flex-col gap-5">
-                <Link href="/dashboard/assignments" className="flex items-start gap-4 group">
+                <Link href="/dashboard/assignments?filter=all" className="flex items-start gap-4 group">
                   <div className="w-10 h-10 rounded-sm bg-surface-subtle border border-border flex items-center justify-center shrink-0">
                     <BookOpen size={17} className="text-muted-foreground" />
                   </div>

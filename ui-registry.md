@@ -70,7 +70,7 @@ Files: `src/components/AssignmentCard.tsx`, `AssignmentsClient.tsx` · Updated 2
 | Title | `text-foreground font-semibold text-base` |
 | Course label | `text-muted-foreground text-xs`, reserve space for card actions |
 | Hover | `hover:border-primary/40 hover:bg-surface-subtle` |
-| Selected filter | `bg-primary-soft border-primary/25 text-primary`, `aria-pressed` |
+| Selected filter | `bg-primary border-primary text-primary-foreground`, `aria-pressed` |
 | Selected course | `bg-primary-soft border-primary text-foreground` |
 | Status | `bg-danger-soft text-danger`, `bg-warning-soft text-warning`, `bg-success-soft text-success` |
 
@@ -79,6 +79,12 @@ Assignment actions use visible labels and a 40px minimum height. Mark complete u
 `bg-primary text-primary-foreground`; Dismiss uses `border-input` and opens an inline
 confirmation (`bg-warning-soft border-warning`). Explain that these actions update
 DuePulse only. Disable both actions while either request is pending.
+
+Assignment views use compact full-width rows, date headings, and pages of 20.
+The title panel uses `bg-sidebar text-sidebar-foreground border-t-4 border-brand-gold`.
+Filters have a 44px minimum height; search and native selects share labelled controls.
+Older overdue work is collapsed with a count and reminder policy. Query parameters
+preserve filters on refresh/back; counts reflect the current course and search.
 
 ### Forms and actions
 

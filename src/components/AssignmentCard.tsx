@@ -18,11 +18,12 @@ interface AssignmentCardProps {
   course_color?: string;
   userTz: string;
   is_completed?: boolean;
+  now?: number;
 }
 
-function getDueDateInfo(due_at: string, userTz: string): { label: string; isOverdue: boolean; isDueSoon: boolean } {
+function getDueDateInfo(due_at: string, userTz: string, currentTime?: number): { label: string; isOverdue: boolean; isDueSoon: boolean } {
   const due = new Date(due_at)
-  const now = new Date()
+  const now = new Date(currentTime ?? Date.now())
   const msUntilDue = due.getTime() - now.getTime()
   const isOverdue = msUntilDue < 0
   const isDueSoon = !isOverdue && msUntilDue <= 24 * 60 * 60 * 1000
@@ -62,6 +63,7 @@ export default function AssignmentCard({
   course_color = "var(--primary)",
   userTz,
   is_completed = false,
+  now,
 }: AssignmentCardProps) {
   const router = useRouter();
   const bumpAssignmentsVersion = useDuePulseStore((s) => s.bumpAssignmentsVersion);
@@ -75,7 +77,7 @@ export default function AssignmentCard({
     setCompleted(is_completed);
   }
 
-  const dueInfo = due_at ? getDueDateInfo(due_at, userTz) : null;
+  const dueInfo = due_at ? getDueDateInfo(due_at, userTz, now) : null;
   const isOverdue = !completed && (dueInfo?.isOverdue ?? false);
   const isDueSoon = !completed && (dueInfo?.isDueSoon ?? false);
 
@@ -128,16 +130,16 @@ export default function AssignmentCard({
   return (
     <Card
       className={cn(
-        "rounded-sm bg-card border border-border p-4 flex flex-col gap-2 ring-0 shadow-none hover:border-primary/40 hover:bg-surface-subtle transition-all duration-150 relative group",
+        "rounded-sm bg-card border border-border p-4 flex flex-col gap-2 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-5 ring-0 shadow-none hover:border-primary/40 transition-colors duration-150 relative group",
         completed && "bg-surface-subtle"
       )}
       style={{ borderLeft: `3px solid ${course_color}` }}
     >
-      <p className="text-muted-foreground text-xs font-bold uppercase tracking-wide leading-normal">{course_name}</p>
-      <p className={cn("text-foreground font-semibold text-base break-words", completed && "line-through text-muted-foreground")}>
+      <p className="sm:col-start-1 sm:row-start-1 text-muted-foreground text-xs font-bold uppercase tracking-wide leading-normal">{course_name}</p>
+      <p className={cn("sm:col-start-1 sm:row-start-2 text-foreground font-semibold text-base break-words", completed && "line-through text-muted-foreground")}>
         {title}
       </p>
-      <div className="flex flex-wrap items-center gap-2 mt-1">
+      <div className="sm:col-start-2 sm:row-start-1 sm:row-span-3 flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={handleToggleComplete}
@@ -171,9 +173,9 @@ export default function AssignmentCard({
         )}
       </div>
 
-      {isOverdue && <p className="text-sm text-muted-foreground">Already submitted? Mark complete here. This updates DuePulse only.</p>}
+      {isOverdue && <p className="sm:col-span-2 sm:row-start-4 text-sm text-muted-foreground">Already submitted? Mark complete here. This updates DuePulse only.</p>}
       {confirmDismiss && isOverdue && (
-        <div className="rounded-sm border border-warning bg-warning-soft p-3 text-sm">
+        <div className="sm:col-span-2 sm:row-start-5 rounded-sm border border-warning bg-warning-soft p-3 text-sm">
           <p className="text-foreground">Hide this assignment and stop its reminders? It will stay in Canvas.</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" disabled={dismissing || completing} onClick={handleDismiss} className="min-h-10 rounded-sm bg-primary px-3 py-2 font-semibold text-primary-foreground disabled:opacity-50">{dismissing ? "Dismissing…" : "Yes, dismiss"}</button>
@@ -181,9 +183,9 @@ export default function AssignmentCard({
           </div>
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="sm:col-start-1 sm:row-start-3 flex flex-wrap items-center gap-2">
         {due_at ? (
-          <span className="text-muted-foreground text-xs">{dueInfo!.label}</span>
+          <span className="text-muted-foreground text-xs">{completed ? `Deadline: ${new Intl.DateTimeFormat("en-US", { timeZone: userTz, month: "short", day: "numeric", year: "numeric" }).format(new Date(due_at))}` : dueInfo!.label}</span>
         ) : (
           <span className="text-muted-foreground text-xs">No due date</span>
         )}
