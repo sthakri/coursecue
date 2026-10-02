@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { Check, FilePenLine } from "lucide-react";
 import { useDuePulseStore } from "@/lib/store";
 
 interface AssignmentCardProps {
@@ -130,16 +130,16 @@ export default function AssignmentCard({
   return (
     <Card
       className={cn(
-        "rounded-sm bg-card border border-border p-4 flex flex-col gap-2 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-5 ring-0 shadow-none hover:border-primary/40 transition-colors duration-150 relative group",
+        "rounded-sm bg-card border-0 border-b border-border p-4 flex flex-col gap-2 sm:grid sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:gap-x-4 ring-0 shadow-none hover:bg-surface-subtle transition-colors duration-150 relative group",
         completed && "bg-surface-subtle"
       )}
-      style={{ borderLeft: `3px solid ${course_color}` }}
     >
-      <p className="sm:col-start-1 sm:row-start-1 text-muted-foreground text-xs font-bold uppercase tracking-wide leading-normal">{course_name}</p>
-      <p className={cn("sm:col-start-1 sm:row-start-2 text-foreground font-semibold text-base break-words", completed && "line-through text-muted-foreground")}>
+      <div className="hidden sm:flex sm:col-start-1 sm:row-start-1 sm:row-span-3 min-h-16 items-center justify-center rounded-sm bg-info-soft text-info" aria-hidden="true"><FilePenLine size={24} /></div>
+      <p className="sm:col-start-2 sm:row-start-2 text-muted-foreground text-xs leading-normal flex items-center gap-2"><span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: course_color }} aria-hidden="true" />{course_name}</p>
+      <p className={cn("sm:col-start-2 sm:row-start-1 text-info font-semibold text-sm break-words", completed && "line-through text-muted-foreground")}>
         {title}
       </p>
-      <div className="sm:col-start-2 sm:row-start-1 sm:row-span-3 flex flex-wrap items-center gap-2">
+      <div className="sm:col-start-3 sm:row-start-1 sm:row-span-3 flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={handleToggleComplete}
@@ -173,9 +173,9 @@ export default function AssignmentCard({
         )}
       </div>
 
-      {isOverdue && <p className="sm:col-span-2 sm:row-start-4 text-sm text-muted-foreground">Already submitted? Mark complete here. This updates DuePulse only.</p>}
+      {isOverdue && <p className="sm:col-start-2 sm:col-span-2 sm:row-start-4 text-sm text-muted-foreground">Already submitted? Mark complete here. This updates DuePulse only.</p>}
       {confirmDismiss && isOverdue && (
-        <div className="sm:col-span-2 sm:row-start-5 rounded-sm border border-warning bg-warning-soft p-3 text-sm">
+        <div className="sm:col-span-3 sm:row-start-5 rounded-sm border border-warning bg-warning-soft p-3 text-sm">
           <p className="text-foreground">Hide this assignment and stop its reminders? It will stay in Canvas.</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" disabled={dismissing || completing} onClick={handleDismiss} className="min-h-10 rounded-sm bg-primary px-3 py-2 font-semibold text-primary-foreground disabled:opacity-50">{dismissing ? "Dismissing…" : "Yes, dismiss"}</button>
@@ -183,9 +183,9 @@ export default function AssignmentCard({
           </div>
         </div>
       )}
-      <div className="sm:col-start-1 sm:row-start-3 flex flex-wrap items-center gap-2">
+      <div className="sm:col-start-2 sm:row-start-3 flex flex-wrap items-center gap-2">
         {due_at ? (
-          <span className="text-muted-foreground text-xs">{completed ? `Deadline: ${new Intl.DateTimeFormat("en-US", { timeZone: userTz, month: "short", day: "numeric", year: "numeric" }).format(new Date(due_at))}` : dueInfo!.label}</span>
+          <span className={cn("rounded-sm px-2 py-1 text-xs", completed ? "text-muted-foreground" : isOverdue ? "bg-danger-soft text-danger" : "bg-info-soft text-info")}>{completed ? `Deadline: ${new Intl.DateTimeFormat("en-US", { timeZone: userTz, month: "short", day: "numeric", year: "numeric" }).format(new Date(due_at))}` : dueInfo!.label}</span>
         ) : (
           <span className="text-muted-foreground text-xs">No due date</span>
         )}

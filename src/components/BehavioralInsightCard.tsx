@@ -6,7 +6,7 @@ interface Props { insights: MLInsights; activeSlots: number }
 
 const CONFIDENCE_COLORS: Record<string, { dot: string; badge: string; bar: string }> = {
   high: { dot: "bg-success", badge: "text-success", bar: "bg-success" },
-  medium: { dot: "bg-primary", badge: "text-primary", bar: "bg-primary" },
+  medium: { dot: "bg-info", badge: "text-info", bar: "bg-info" },
   low: { dot: "bg-muted-foreground", badge: "text-muted-foreground", bar: "bg-muted-foreground" },
 };
 
@@ -21,7 +21,7 @@ export default function BehavioralInsightCard({ insights, activeSlots }: Props) 
         <p className="text-muted-foreground text-sm mt-2">DuePulse is learning your patterns. Use the app at a few different times of day to unlock your focus profile.</p>
         <div className="mt-4">
           <div className="w-full h-1.5 bg-surface-subtle rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.max(pct, 4)}%` }} />
+            <div className="h-full bg-info rounded-full transition-all" style={{ width: `${Math.max(pct, 4)}%` }} />
           </div>
           <p className="text-muted-foreground text-xs mt-1.5">{activeSlots} of 3 active time slots tracked</p>
         </div>
@@ -37,7 +37,7 @@ export default function BehavioralInsightCard({ insights, activeSlots }: Props) 
       <div className="flex items-center justify-between gap-2 mb-1">
         <h2 className="text-foreground font-semibold text-sm">Your Focus Windows</h2>
         {persona && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary shrink-0">
+          <span className="inline-flex items-center gap-1 rounded-full bg-info-soft border border-info/20 px-2.5 py-1 text-xs font-medium text-info shrink-0">
             {persona.emoji} {persona.label}
           </span>
         )}
@@ -46,8 +46,8 @@ export default function BehavioralInsightCard({ insights, activeSlots }: Props) 
       {persona && <p className="text-muted-foreground text-xs mb-4">{persona.description}</p>}
 
       {topFocusBlock && (
-        <div className="mb-4 rounded-sm bg-surface-subtle border border-primary/15 p-3">
-          <p className="text-primary text-xs font-semibold uppercase tracking-wider">Power Block</p>
+        <div className="mb-4 rounded-sm bg-surface-subtle border border-info/15 p-3">
+          <p className="text-info text-xs font-semibold uppercase tracking-wider">Power Block</p>
           <p className="text-foreground font-semibold text-sm mt-0.5">{topFocusBlock.label}</p>
         </div>
       )}

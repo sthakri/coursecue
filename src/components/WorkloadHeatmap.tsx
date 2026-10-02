@@ -201,7 +201,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
   }, [data, userTz]);
 
   return (
-    <div className="rounded-sm bg-card border border-border p-5 sm:p-6 shadow-none">
+    <div className="rounded-md bg-card border border-border p-5 sm:p-6 shadow-sm">
       <div className="mb-4">
         <h2 className="text-foreground font-semibold text-base">
           Workload — Next 6 Weeks

@@ -84,7 +84,7 @@ export default function ProductiveWindowsChart({ data, userTz }: Props) {
       .attr("y", (d) => yScale(d.score))
       .attr("width", xScale.bandwidth())
       .attr("height", (d) => Math.max(innerHeight - yScale(d.score), d.score > 0 ? 2 : 0))
-      .attr("fill", (d) => (d.hour === peakHour ? "var(--primary-hover)" : "var(--primary)"))
+      .attr("fill", (d) => (d.hour === peakHour ? "var(--info-hover)" : "var(--chart-1)"))
       .attr("opacity", (d) => (d.hour === peakHour ? 1 : d.score > 0 ? 0.75 : 0.1))
       .attr("rx", 2)
       .append("title")
@@ -113,7 +113,7 @@ export default function ProductiveWindowsChart({ data, userTz }: Props) {
             <span>{peakHour !== null ? hourEmoji(peakHour) : "⏰"}</span> Best Time to Review
           </h2>
           {peakHour !== null && (
-            <span className="text-primary text-xs font-semibold bg-primary-soft border border-primary/20 px-2 py-0.5 rounded-full">
+            <span className="text-info text-xs font-semibold bg-info-soft border border-info/20 px-2 py-0.5 rounded-full">
               Peak: {formatLocalHour(peakHour, userTz)}
             </span>
           )}

@@ -67,13 +67,12 @@ export default function AssignmentsClient({ assignments, hasCanvas, userTz, init
 
   return (
     <div className="space-y-6">
-      <section className="rounded-sm bg-sidebar p-5 sm:p-6 text-sidebar-foreground border-t-4 border-brand-gold">
-        <p className="text-brand-gold text-xs font-bold uppercase tracking-widest">Your coursework</p>
-        <h2 className="mt-2 text-2xl sm:text-3xl font-bold">{focusedId ? "Review this assignment" : filter === "completed" ? "Make room for what’s next." : "One deadline at a time."}</h2>
-        <p className="mt-2 text-sm text-sidebar-muted">{filter === "completed" ? "Choose how much of your completed work to see." : "A focused view of your Canvas assignments, with room to look ahead."}</p>
+      <section className="border-b border-border pb-5">
+        <h2 className="text-2xl font-semibold">{focusedId ? "Review assignment" : filter === "completed" ? "Completed course work" : "Course work"}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{filter === "completed" ? "Choose how much of your completed work to see." : "Your Canvas assignments, organised by deadline."}</p>
       </section>
 
-      {focusedId ? <button type="button" onClick={() => update({})} className="min-h-11 text-primary font-bold underline">Back to assignments</button> : <>
+      {focusedId ? <button type="button" onClick={() => update({})} className="min-h-11 text-info hover:text-info-hover font-semibold underline">Back to assignments</button> : <>
         <nav aria-label="Assignment views" className="flex flex-wrap gap-2">
           {tabs.map(tab => {
             const key = tab === "completed" ? "history" : "ahead";
@@ -86,7 +85,7 @@ export default function AssignmentsClient({ assignments, hasCanvas, userTz, init
             </button>;
           })}
         </nav>
-        <div className="grid gap-3 rounded-sm border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <label className="text-sm font-semibold">Search assignments
             <span className="mt-1.5 flex items-center gap-2 rounded-sm border border-input bg-background px-3"><Search size={16} aria-hidden="true" />
               <input value={search} onChange={e => update({ q: e.target.value }, true)} placeholder="Title or course name" className="min-h-11 min-w-0 w-full bg-transparent text-sm font-normal" />

@@ -23,29 +23,28 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <header className="border-b border-border bg-background sticky top-0 z-30 h-[57px]">
-        <div className="pl-14 lg:pl-0 px-5 h-full flex items-center justify-between gap-4 max-w-7xl mx-auto">
-          <h1 className="text-foreground font-semibold text-base">Settings</h1>
+      <header className="border-b border-border bg-background sticky top-0 z-30 min-h-20">
+        <div className="pl-14 lg:pl-6 pr-5 py-5 min-h-20 flex items-center justify-between gap-4 max-w-7xl mx-auto">
+          <h1 className="text-foreground font-semibold text-2xl sm:text-3xl">Settings</h1>
         </div>
       </header>
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-2xl w-full mx-auto">
-        <div className="mb-6 rounded-sm border-t-4 border-brand-gold bg-sidebar p-5 sm:p-6 text-sidebar-foreground">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-gold">Make it yours</p>
-          <h2 className="mt-2 text-2xl font-bold">A rhythm that works for you.</h2>
-          <p className="mt-2 text-sm text-sidebar-muted">Choose when to hear from DuePulse and keep your Canvas connection current.</p>
+        <div className="mb-6 border-b border-border pb-5">
+          <h2 className="text-2xl font-semibold">Notification preferences</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Choose when to hear from DuePulse and keep your Canvas connection current.</p>
         </div>
         <div className="flex flex-col gap-5">
           {/* Canvas Connection */}
           <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
-            <h2 className="text-foreground font-semibold text-base mb-4">Canvas Connection</h2>
+            <h2 className="text-foreground font-semibold text-lg mb-4">Canvas Connection</h2>
             {profile?.canvas_token && profile?.canvas_domain ? (
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-foreground text-sm font-medium">Connected to {profile.canvas_domain}</p>
                   <p className="text-muted-foreground text-xs mt-0.5">Token saved · reconnect to update</p>
                 </div>
-                <Link href="/onboarding" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-hover transition-colors">
+                <Link href="/onboarding" className="flex items-center gap-1.5 text-sm font-medium text-info hover:text-info-hover transition-colors">
                   Reconnect <ExternalLink size={12} />
                 </Link>
               </div>
@@ -61,7 +60,7 @@ export default async function SettingsPage() {
 
           {/* Push Notifications */}
           <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
-            <h2 className="text-foreground font-semibold text-base mb-4">Push Notifications</h2>
+            <h2 className="text-foreground font-semibold text-lg mb-4">Push Notifications</h2>
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <PushNotificationButton userId={user.id} />
               <TestNotifButton />
@@ -82,7 +81,7 @@ export default async function SettingsPage() {
 
           {/* Account */}
           <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
-            <h2 className="text-foreground font-semibold text-base mb-4">Account</h2>
+            <h2 className="text-foreground font-semibold text-lg mb-4">Account</h2>
             <div>
               <p className="text-body text-sm font-medium">Email</p>
               <p className="text-muted-foreground text-sm">{user.email}</p>

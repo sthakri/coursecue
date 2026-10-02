@@ -52,8 +52,8 @@ const PAUSE_DURATIONS = [
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-sm bg-card border border-border border-t-4 border-t-primary p-5 sm:p-6">
-      <h2 className="text-primary font-bold text-lg mb-4">{title}</h2>
+    <section className="rounded-md bg-card border border-border p-5 sm:p-6 shadow-sm">
+      <h2 className="text-foreground font-semibold text-lg mb-4">{title}</h2>
       {children}
     </section>
   );

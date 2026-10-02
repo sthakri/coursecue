@@ -102,7 +102,7 @@ export default async function InsightsPage() {
       return {
         id: cid,
         name: course?.name ?? "Course",
-        color: course?.color ?? "var(--primary)",
+        color: course?.color ?? "var(--info)",
         ...data,
       };
     })
@@ -137,21 +137,20 @@ export default async function InsightsPage() {
 
   return (
     <>
-      <header className="border-b border-border bg-background sticky top-0 z-30 h-[57px]">
-        <div className="pl-14 lg:pl-0 px-5 h-full flex items-center justify-between gap-4 max-w-7xl mx-auto">
+      <header className="border-b border-border bg-background sticky top-0 z-30 min-h-20">
+        <div className="pl-14 lg:pl-6 pr-5 py-5 min-h-20 flex items-center justify-between gap-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
-            <Activity size={18} className="text-primary" />
-            <h1 className="text-foreground font-semibold text-base">Insights & Analytics</h1>
+            <Activity size={18} className="text-info" />
+            <h1 className="text-foreground font-semibold text-2xl sm:text-3xl">Insights & Analytics</h1>
           </div>
           <span className="text-muted-foreground text-xs hidden sm:block">Timezone: {userTz}</span>
         </div>
       </header>
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-7xl w-full mx-auto flex flex-col gap-6">
-        <section className="rounded-sm border-t-4 border-brand-gold bg-sidebar p-5 sm:p-6 text-sidebar-foreground">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-gold">Your patterns</p>
-          <h2 className="mt-2 text-2xl font-bold">See how your weeks take shape.</h2>
-          <p className="mt-2 text-sm text-sidebar-muted">Coursework and activity recorded in DuePulse. More activity helps reveal your study rhythm.</p>
+        <section className="border-b border-border pb-5">
+          <h2 className="text-2xl font-semibold">Coursework & activity</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Coursework and activity recorded in DuePulse. More activity helps reveal your study rhythm.</p>
         </section>
         {/* Top KPI strip: Real Assignment Performance */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -176,9 +175,9 @@ export default async function InsightsPage() {
           <div className="rounded-sm bg-card border border-border p-5">
             <div className="flex items-center justify-between">
               <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Peak Hour</p>
-              <Clock size={16} className="text-primary" />
+              <Clock size={16} className="text-info" />
             </div>
-            <p className="font-bold text-2xl text-primary mt-2 leading-none">
+            <p className="font-bold text-2xl text-info mt-2 leading-none">
               {peakHour !== null ? formatLocalHour(peakHour, userTz) : "—"}
             </p>
             <p className="text-muted-foreground text-xs mt-2">Highest app activity</p>
@@ -207,11 +206,11 @@ export default async function InsightsPage() {
         {/* Workload Deadline Pattern by Day of Week & Course Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Deadline distribution by day */}
-          <div className="rounded-sm bg-card border border-border p-5 sm:p-6 flex flex-col justify-between">
+          <div className="rounded-md bg-card border border-border p-5 sm:p-6 shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <h2 className="text-foreground font-semibold text-base flex items-center gap-2">
-                  <Calendar size={18} className="text-primary" />
+                <h2 className="text-foreground font-semibold text-lg flex items-center gap-2">
+                  <Calendar size={18} className="text-info" />
                   Deadline Concentration by Day
                 </h2>
               </div>
@@ -228,7 +227,7 @@ export default async function InsightsPage() {
                     <span className={`text-xs w-8 shrink-0 font-medium ${isPeak ? "text-warning" : "text-muted-foreground"}`}>{dow}</span>
                     <div className="flex-1 h-2 bg-surface-subtle rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-300 ${isPeak ? "bg-warning" : count > 0 ? "bg-primary" : "bg-transparent"}`}
+                        className={`h-full rounded-full transition-all duration-300 ${isPeak ? "bg-warning" : count > 0 ? "bg-info" : "bg-transparent"}`}
                         style={{ width: `${Math.max(pct, count > 0 ? 5 : 0)}%` }}
                       />
                     </div>
@@ -246,11 +245,11 @@ export default async function InsightsPage() {
           </div>
 
           {/* Course workload breakdown */}
-          <div className="rounded-sm bg-card border border-border p-5 sm:p-6 flex flex-col justify-between">
+          <div className="rounded-md bg-card border border-border p-5 sm:p-6 shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <h2 className="text-foreground font-semibold text-base flex items-center gap-2">
-                  <BookOpen size={18} className="text-primary" />
+                <h2 className="text-foreground font-semibold text-lg flex items-center gap-2">
+                  <BookOpen size={18} className="text-info" />
                   Course Workload Breakdown
                 </h2>
                 <span className="text-muted-foreground text-xs">{courseAnalytics.length} course{courseAnalytics.length !== 1 ? "s" : ""}</span>
@@ -297,9 +296,9 @@ export default async function InsightsPage() {
         </div>
 
         {/* Activity Heatmap 7x24 */}
-        <div className="rounded-sm bg-card border border-border p-5 sm:p-6 overflow-x-auto">
-          <h2 className="text-foreground font-semibold text-base mb-1">Activity Heatmap (7 × 24)</h2>
-          <p className="text-muted-foreground text-xs mb-5">When you&apos;re active on the dashboard, local time ({userTz}) — darker maroon = higher engagement</p>
+        <div className="rounded-md bg-card border border-border p-5 sm:p-6 shadow-sm overflow-x-auto">
+          <h2 className="text-foreground font-semibold text-lg mb-1">Activity Heatmap (7 × 24)</h2>
+          <p className="text-muted-foreground text-xs mb-5">When you&apos;re active on the dashboard, local time ({userTz}) — darker blue = higher engagement</p>
           <div className="min-w-[560px]">
             {/* Hour labels */}
             <div className="flex items-center mb-1 ml-9">
@@ -323,7 +322,7 @@ export default async function InsightsPage() {
                         key={h}
                         className="flex-1 aspect-square rounded-[2px]"
                         style={{
-                          backgroundColor: `color-mix(in srgb, var(--primary) ${(alpha * 100).toFixed(0)}%, var(--background))`,
+                          backgroundColor: `color-mix(in srgb, var(--info) ${(alpha * 100).toFixed(0)}%, var(--background))`,
                           border: score > 0 ? "none" : "1px solid var(--border)",
                         }}
                         title={`${day} ${formatLocalHour(h, userTz)}: ${(score * 100).toFixed(0)} pts`}
@@ -338,7 +337,7 @@ export default async function InsightsPage() {
               <span className="text-muted-foreground text-[10px]">Less active</span>
               <div className="flex gap-px">
                 {[0.06, 0.2, 0.4, 0.65, 0.93].map((a) => (
-                  <div key={a} className="w-3 h-3 rounded-[2px]" style={{ backgroundColor: `color-mix(in srgb, var(--primary) ${a * 100}%, var(--background))` }} />
+                  <div key={a} className="w-3 h-3 rounded-[2px]" style={{ backgroundColor: `color-mix(in srgb, var(--info) ${a * 100}%, var(--background))` }} />
                 ))}
               </div>
               <span className="text-muted-foreground text-[10px]">More active</span>
@@ -348,8 +347,8 @@ export default async function InsightsPage() {
 
         {/* Nudge summary */}
         {totalNudges > 0 && (
-          <div className="rounded-sm bg-card border border-border p-5 sm:p-6">
-            <h2 className="text-foreground font-semibold text-base mb-1">Nudge Summary</h2>
+          <div className="rounded-md bg-card border border-border p-5 sm:p-6 shadow-sm">
+            <h2 className="text-foreground font-semibold text-lg mb-1">Nudge Summary</h2>
             <p className="text-muted-foreground text-xs mb-5">Push notifications sent in the last 30 days</p>
             <div className="flex flex-col gap-3">
               {Object.entries(nudgeCounts).map(([type, count]) => {
@@ -361,7 +360,7 @@ export default async function InsightsPage() {
                       <span className="text-foreground text-sm font-medium">{count}</span>
                     </div>
                     <div className="w-full h-1.5 bg-surface-subtle rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      <div className="h-full bg-info rounded-full transition-all" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );

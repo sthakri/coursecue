@@ -59,10 +59,10 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <header className="border-b border-border bg-background sticky top-0 z-30 min-h-[57px]">
-        <div className="pl-14 lg:pl-5 pr-5 py-3 flex flex-wrap items-center justify-between gap-3 max-w-7xl mx-auto">
+      <header className="border-b border-border bg-background sticky top-0 z-30 min-h-20">
+        <div className="pl-14 lg:pl-6 pr-5 py-5 flex flex-wrap items-center justify-between gap-3 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
-            <h1 className="text-foreground text-base font-bold">Dashboard</h1>
+            <h1 className="text-foreground text-2xl sm:text-3xl font-semibold">Dashboard</h1>
             {lastSynced && (
               <span className="hidden sm:flex items-center gap-1.5 text-muted-foreground text-xs">
                 <RefreshCw size={11} />
@@ -79,11 +79,12 @@ export default async function DashboardPage() {
 
       <main className="flex-1 px-5 py-6 sm:px-6 sm:py-7 max-w-7xl w-full mx-auto">
         <MobileInstallGuide />
-        <div className="mb-6 rounded-sm border-t-4 border-brand-gold bg-sidebar p-5 sm:p-7 text-sidebar-foreground">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-gold">Your study desk</p>
-          <h2 className="mt-2 text-3xl font-bold">Your week, in focus.</h2>
-          <p className="mt-2 text-sm text-sidebar-muted">{dueThisWeekCount} {dueThisWeekCount === 1 ? "assignment due" : "assignments due"} in the next 7 days. Choose what to tackle next.</p>
-          <Link href="/dashboard/assignments" className="mt-5 inline-flex min-h-11 items-center gap-3 rounded-sm bg-sidebar-primary px-4 text-sm font-bold text-sidebar-primary-foreground hover:bg-primary-soft">Open your planner <span aria-hidden="true">→</span></Link>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+          <div>
+            <h2 className="text-2xl font-semibold">Course work</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{dueThisWeekCount} {dueThisWeekCount === 1 ? "assignment due" : "assignments due"} in the next 7 days.</p>
+          </div>
+          <Link href="/dashboard/assignments" className="inline-flex min-h-11 items-center gap-3 rounded-sm border border-input bg-secondary px-4 text-sm text-foreground hover:bg-muted">Open planner <span aria-hidden="true">→</span></Link>
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
           {/* Heatmap */}
@@ -93,22 +94,22 @@ export default async function DashboardPage() {
 
           {/* Stats */}
           <div className="xl:col-span-1 flex flex-col gap-4">
-            <div className="rounded-sm bg-card border border-border border-t-4 border-t-primary p-6 shadow-none">
+            <div className="rounded-md bg-card border border-border p-6 shadow-sm">
               <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-6">Overview</p>
               <div className="flex flex-col gap-5">
                 <Link href="/dashboard/assignments?filter=all" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-sm bg-primary flex items-center justify-center shrink-0">
-                    <BookOpen size={17} className="text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-sm bg-info-soft flex items-center justify-center shrink-0">
+                    <BookOpen size={17} className="text-info" />
                   </div>
                   <div>
-                    <p className="text-foreground font-bold text-3xl leading-none group-hover:text-primary-hover transition-colors">{totalCount}</p>
+                    <p className="text-info font-bold text-3xl leading-none group-hover:text-info-hover transition-colors">{totalCount}</p>
                     <p className="text-muted-foreground text-sm mt-1">Open assignments</p>
                   </div>
                 </Link>
                 <div className="h-px bg-muted" />
                 <Link href="/dashboard/assignments?filter=overdue" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-sm bg-danger flex items-center justify-center shrink-0">
-                    <AlertTriangle size={17} className="text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-sm bg-danger-soft flex items-center justify-center shrink-0">
+                    <AlertTriangle size={17} className="text-danger" />
                   </div>
                   <div>
                     <p className="text-danger font-bold text-3xl leading-none">{overdueCount}</p>
@@ -117,8 +118,8 @@ export default async function DashboardPage() {
                 </Link>
                 <div className="h-px bg-muted" />
                 <Link href="/dashboard/assignments?filter=this-week" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-sm bg-success flex items-center justify-center shrink-0">
-                    <CalendarClock size={17} className="text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-sm bg-success-soft flex items-center justify-center shrink-0">
+                    <CalendarClock size={17} className="text-success" />
                   </div>
                   <div>
                     <p className="text-success font-bold text-3xl leading-none">{dueThisWeekCount}</p>
@@ -128,7 +129,7 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <Link href="/dashboard/insights" className="rounded-sm bg-success p-5 flex items-center justify-between group text-primary-foreground hover:brightness-110 transition-colors">
+            <Link href="/dashboard/insights" className="rounded-md border border-border bg-card p-5 flex items-center justify-between group text-info hover:bg-surface-subtle transition-colors shadow-sm">
               <div>
                 <p className="font-semibold text-sm">Your Focus Insights</p>
                 <p className="text-xs mt-0.5">See your productive patterns</p>

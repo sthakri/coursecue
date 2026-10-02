@@ -30,10 +30,12 @@ function NavItems({
   pathname,
   collapsed,
   onClick,
+  rail = false,
 }: {
   pathname: string;
   collapsed: boolean;
   onClick?: () => void;
+  rail?: boolean;
 }) {
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -41,7 +43,7 @@ function NavItems({
   }
 
   return (
-    <nav className="flex-1 px-2 py-3 space-y-0.5">
+    <nav className={`flex-1 py-3 ${rail ? "px-0" : "px-2 space-y-0.5"}`} aria-label="Main navigation">
       {NAV.map(({ href, label, icon: Icon }) => {
         const active = isActive(href);
         return (
@@ -50,8 +52,10 @@ function NavItems({
             href={href}
             onClick={onClick}
             aria-current={active ? "page" : undefined}
+            aria-label={label}
             className={[
-              "flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-all duration-150",
+              "flex items-center px-3 text-sm font-medium transition-colors duration-150",
+              rail ? "flex-col justify-center gap-1.5 py-4 rounded-none" : "gap-3 py-2.5 rounded-sm",
               collapsed ? "justify-center" : "",
               active
                 ? "border border-transparent bg-sidebar-primary text-sidebar-primary-foreground"
@@ -59,7 +63,7 @@ function NavItems({
             ].join(" ")}
             title={collapsed ? label : undefined}
           >
-            <Icon size={17} className={active ? "text-primary" : ""} />
+            <Icon size={rail ? 24 : 17} className={active ? "text-primary" : ""} />
             {!collapsed && <span>{label}</span>}
           </Link>
         );
@@ -163,32 +167,14 @@ export default function DashboardSidebar({
       <aside
         className={[
           "hidden lg:flex flex-col shrink-0 border-r border-sidebar-border bg-sidebar min-h-screen sticky top-0 h-screen transition-all duration-200",
-          collapsed ? "w-16" : "w-48",
+          collapsed ? "w-16" : "w-24",
         ].join(" ")}
       >
         {/* Logo */}
-        <div className={`flex items-center border-b border-sidebar-border ${collapsed ? "justify-center px-2 py-5" : "px-5 py-5 justify-between"}`}>
-          {!collapsed && (
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft shadow-none">
-                <Zap size={14} className="text-primary" fill="currentColor" />
-              </div>
-              <span className="font-bold text-sidebar-foreground tracking-tight">DuePulse</span>
-            </Link>
-          )}
-          {collapsed && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
-              <Zap size={14} className="text-primary" fill="currentColor" />
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={toggleCollapse}
-            className={`text-sidebar-muted hover:text-sidebar-muted bg-transparent transition-colors ${collapsed ? "hidden" : ""}`}
-            aria-label="Collapse sidebar"
-          >
-            <ChevronLeft size={16} />
-          </button>
+        <div className="flex justify-center px-2 py-6">
+          <Link href="/dashboard" aria-label="DuePulse dashboard" title="DuePulse" className="text-sidebar-foreground">
+            <Zap size={30} fill="currentColor" aria-hidden="true" />
+          </Link>
         </div>
 
         {collapsed && (
@@ -202,27 +188,25 @@ export default function DashboardSidebar({
           </button>
         )}
 
-        <NavItems pathname={pathname} collapsed={collapsed} />
+        <NavItems pathname={pathname} collapsed={collapsed} rail />
 
         {/* User info + sign out */}
         <div className="border-t border-sidebar-border">
           {email && initial && !collapsed && (
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-sidebar-border">
-              <div className="w-7 h-7 rounded-full bg-primary-soft border border-primary/30 flex items-center justify-center text-primary font-semibold text-xs shrink-0">
+            <div className="flex flex-col items-center gap-1.5 px-2 py-3" title={email}>
+              <div className="w-8 h-8 rounded-full border border-sidebar-muted flex items-center justify-center text-sidebar-foreground font-semibold text-sm shrink-0">
                 {initial}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sidebar-foreground text-xs font-medium truncate">{email.split("@")[0]}</p>
-                <p className="text-sidebar-muted text-[11px] truncate">{email}</p>
-              </div>
+              <p className="text-sidebar-foreground text-xs">Account</p>
             </div>
           )}
           <div className="p-2">
             <button
               type="button"
               onClick={() => setShowSignOutConfirm(true)}
+              aria-label="Sign out"
               className={[
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors bg-transparent border border-transparent",
+                "w-full flex flex-col items-center gap-1.5 px-2 py-3 rounded-sm text-xs font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors bg-transparent border border-transparent",
                 collapsed ? "justify-center" : "",
               ].join(" ")}
               title={collapsed ? "Sign out" : undefined}
@@ -231,6 +215,7 @@ export default function DashboardSidebar({
               {!collapsed && <span>Sign out</span>}
             </button>
           </div>
+          {!collapsed && <button type="button" onClick={toggleCollapse} aria-label="Collapse sidebar" className="flex min-h-11 w-full items-center justify-center text-sidebar-muted hover:bg-sidebar-accent"><ChevronLeft size={20} /></button>}
         </div>
       </aside>
       {/* Sign-out confirmation modal */}
