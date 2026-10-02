@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
   const parsed = pushSubscribeSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 422 });
+    return NextResponse.json({ error: "We couldn't register notifications for this device. Enable notifications again and retry." }, { status: 422 });
   }
 
   const { endpoint, p256dh, auth } = parsed.data;

@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     type: req.nextUrl.searchParams.get("type") ?? "productive_window",
   })
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 422 })
+    return NextResponse.json({ error: "Choose a valid notification test and try again." }, { status: 422 })
   }
   if (parsed.data.userId !== user.id) {
     return NextResponse.json({ error: "Can only trigger test nudges for your own account" }, { status: 403 })

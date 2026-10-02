@@ -54,8 +54,8 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
       if (upsertError) { setError("Connection works, but saving it failed — please try again."); return; }
       setCourseCount(result.courseCount);
       setStep(2);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Connection failed. Check your domain and token.");
+    } catch {
+      setError("We couldn't connect to Canvas. Check your connection, domain, and token, then try again.");
     } finally {
       setLoading(false);
     }

@@ -18,7 +18,7 @@ export default function GlobalError({
       <div className="text-center max-w-md">
         <h2 className="text-foreground font-bold text-2xl mb-2">Something went wrong</h2>
         <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-          {error.message || "An unexpected error occurred."}
+          We couldn&apos;t load this page. Please try again.
         </p>
         <button
           onClick={reset}

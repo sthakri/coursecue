@@ -10,7 +10,7 @@ export async function saveNotificationSettings(
 ): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: "Your session has expired. Sign in again and retry." };
 
   const quietEnabled = formData.get("quiet_hours_enabled") === "on";
   const quietStartRaw = Number(formData.get("quiet_hours_start"));
@@ -18,7 +18,7 @@ export async function saveNotificationSettings(
   const quietStart = quietEnabled && Number.isInteger(quietStartRaw) && quietStartRaw >= 0 && quietStartRaw <= 23 ? quietStartRaw : null;
   const quietEnd = quietEnabled && Number.isInteger(quietEndRaw) && quietEndRaw >= 0 && quietEndRaw <= 23 ? quietEndRaw : null;
   if (quietEnabled && (quietStart === null || quietEnd === null)) {
-    return { error: "Invalid quiet hours" };
+    return { error: "Choose valid start and end times for quiet hours." };
   }
 
   const nudgeFrequencyRaw = (formData.get("nudge_frequency") as string) || "normal";
@@ -29,7 +29,7 @@ export async function saveNotificationSettings(
 
   const timezoneRaw = (formData.get("timezone") as string) || undefined;
   if (timezoneRaw && !timezoneSchema.safeParse(timezoneRaw).success) {
-    return { error: "Invalid timezone" };
+    return { error: "Choose a valid timezone and try again." };
   }
 
   const { data, error } = await supabase
@@ -47,7 +47,7 @@ export async function saveNotificationSettings(
 
   // update matching 0 rows is not an error — verify a row changed so the
   // UI never toasts "saved" over a missing profile row.
-  if (error || !data || data.length === 0) return { error: "Failed to save settings" };
+  if (error || !data || data.length === 0) return { error: "We couldn't save your settings. Please try again." };
   return { success: true };
 }
 
@@ -56,7 +56,7 @@ export async function pauseNotificationsAction(
 ): Promise<{ success?: boolean; error?: string; pausedUntil?: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: "Your session has expired. Sign in again and retry." };
 
   // Clamp: no Infinity / absurd far-future pauses (both crash Date or pause forever).
   const hours = Math.min(Math.max(Number(formData.get("hours")) || 0, 0), 720);
@@ -74,6 +74,6 @@ export async function pauseNotificationsAction(
     .eq("id", user.id)
     .select("id");
 
-  if (error || !data || data.length === 0) return { error: "Failed to update pause" };
+  if (error || !data || data.length === 0) return { error: "We couldn't update your notification pause. Please try again." };
   return { success: true, pausedUntil };
 }

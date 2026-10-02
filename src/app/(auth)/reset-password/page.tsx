@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { authErrorMessage } from "@/lib/auth-errors";
 import AuthBrandPanel from "@/components/auth/AuthBrandPanel";
 
 export default function ResetPasswordPage() {
@@ -36,41 +37,45 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    // The emailed code IS the verification — no link click, no PKCE verifier,
-    // so mail-scanner prefetch and cross-browser opens can't break the flow.
-    // But verifyOtp CONSUMES the code: if a previous submit verified fine and
-    // only the new password failed the strength rules, a recovery session
-    // already exists and re-verifying would find the code burned. Skip the
-    // verify whenever this browser already holds a session for this email.
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      // The emailed code IS the verification — no link click, no PKCE verifier,
+      // so mail-scanner prefetch and cross-browser opens can't break the flow.
+      // But verifyOtp CONSUMES the code: if a previous submit verified fine and
+      // only the new password failed the strength rules, a recovery session
+      // already exists and re-verifying would find the code burned. Skip the
+      // verify whenever this browser already holds a session for this email.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (session?.user?.email?.toLowerCase() !== email.trim().toLowerCase()) {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: code.trim(),
-        type: "recovery",
-      });
+      if (session?.user?.email?.toLowerCase() !== email.trim().toLowerCase()) {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          email: email.trim(),
+          token: code.trim(),
+          type: "recovery",
+        });
 
-      if (verifyError) {
-        setLoading(false);
-        setError("That code is invalid or expired — request a new one from the sign-in page.");
+        if (verifyError) {
+          setError(authErrorMessage(verifyError, "verify-code"));
+          return;
+        }
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+
+      if (updateError) {
+        setError(authErrorMessage(updateError, "update-password"));
         return;
       }
+
+      router.push("/dashboard");
+    } catch (error) {
+      setError(authErrorMessage(error, "update-password"));
+    } finally {
+      setLoading(false);
     }
-
-    const { error: updateError } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-
-    if (updateError) {
-      setError(updateError.message);
-      return;
-    }
-
-    router.push("/dashboard");
   }
 
   const inputCls =
@@ -142,6 +147,8 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
+                  aria-describedby="password-help"
                   className={`${inputCls} pr-10`}
                 />
                 <button
@@ -154,6 +161,8 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
             </div>
+
+            <p id="password-help" className="text-muted-foreground text-xs">Use at least 8 characters, with uppercase and lowercase letters, a number, and a symbol.</p>
 
             <div className="space-y-1.5">
               <Label htmlFor="confirm-password" className="text-body text-sm font-medium">Confirm password</Label>
@@ -170,7 +179,7 @@ export default function ResetPasswordPage() {
             </div>
 
             {error && (
-              <p className="text-danger text-sm bg-danger-soft border border-danger/20 rounded-sm px-4 py-3">
+              <p role="alert" className="text-danger text-sm bg-danger-soft border border-danger/20 rounded-sm px-4 py-3">
                 {error}
               </p>
             )}

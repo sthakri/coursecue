@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const parsed = completeAssignmentSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") },
+      { error: "We couldn't identify that assignment. Refresh the page and try again." },
       { status: 422 }
     );
   }

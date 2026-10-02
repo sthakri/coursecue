@@ -259,16 +259,21 @@ export async function testCanvasConnection(
     );
 
     if (!response.ok) {
-      return { success: false, courseCount: 0, error: `HTTP ${response.status}` };
+      const error = response.status === 401 || response.status === 403
+        ? "Canvas couldn't verify your access token. Check it or create a new token, then try again."
+        : response.status === 429
+          ? "Canvas is receiving too many requests. Wait a few minutes, then try again."
+          : "Canvas is unavailable right now. Please try again later.";
+      return { success: false, courseCount: 0, error };
     }
 
     const courses: unknown[] = await response.json();
     return { success: true, courseCount: courses.length };
-  } catch (err) {
+  } catch {
     return {
       success: false,
       courseCount: 0,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: "We couldn't connect to Canvas. Check your Canvas domain and connection, then try again.",
     };
   }
 }

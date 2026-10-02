@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
   const parsed = pushTestSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 422 });
+    return NextResponse.json({ error: "We couldn't identify this device. Enable notifications again and retry." }, { status: 422 });
   }
 
   const { endpoint } = parsed.data;

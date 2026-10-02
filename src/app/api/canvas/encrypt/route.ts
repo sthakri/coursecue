@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const raw: unknown = await req.json();
   const result = encryptBodySchema.safeParse(raw);
   if (!result.success) {
-    return NextResponse.json({ error: result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 422 });
+    return NextResponse.json({ error: "Enter your Canvas access token and try again." }, { status: 422 });
   }
 
   const ciphertext = await encrypt(result.data.plaintext);

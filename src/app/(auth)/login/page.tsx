@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { authErrorMessage } from "@/lib/auth-errors";
 import AuthBrandPanel from "@/components/auth/AuthBrandPanel";
 
 type Mode = "signin" | "signup" | "reset";
@@ -31,64 +32,66 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    try {
+      const supabase = createClient();
 
-    const supabase = createClient();
-
-    if (mode === "reset") {
-      // OTP code flow, not a magic link: one-time links get consumed by mail
-      // scanners/prefetch before the user clicks (otp_expired), and PKCE
-      // code links break when the mail app opens them in a different browser
-      // context than the one that requested the reset. A typed 6-digit code
-      // has no link to prefetch and no code_verifier to lose.
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
-      setLoading(false);
-      if (resetError) {
-        setError(resetError.message);
+      if (mode === "reset") {
+        // OTP code flow, not a magic link: one-time links get consumed by mail
+        // scanners/prefetch before the user clicks (otp_expired), and PKCE
+        // code links break when the mail app opens them in a different browser
+        // context than the one that requested the reset. A typed 6-digit code
+        // has no link to prefetch and no code_verifier to lose.
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+        if (resetError) {
+          setError(authErrorMessage(resetError, "reset"));
+          return;
+        }
+        router.push(`/reset-password?email=${encodeURIComponent(email)}`);
         return;
       }
-      router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-      return;
-    }
 
-    const result =
-      mode === "signin"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
+      const result =
+        mode === "signin"
+          ? await supabase.auth.signInWithPassword({ email, password })
+          : await supabase.auth.signUp({ email, password });
 
-    const { error: authError } = result;
+      const { error: authError } = result;
 
-    setLoading(false);
-
-    if (authError) {
-      setError(authError.message);
-      return;
-    }
-
-    if (mode === "signup") {
-      const { data } = result;
-      if (data?.session) {
-        router.push("/onboarding");
-      } else {
-        setError("Check your email for a confirmation link before signing in.");
+      if (authError) {
+        setError(authErrorMessage(authError, mode));
+        return;
       }
-    } else {
-      const supabase = createClient();
-      const {
-        data: { user: signedInUser },
-      } = await supabase.auth.getUser();
-      const { data: profile } = signedInUser
-        ? await supabase
-            .from("profiles")
-            .select("onboarding_complete, canvas_token")
-            .eq("id", signedInUser.id)
-            .single()
-        : { data: null };
 
-      if (profile?.onboarding_complete && profile?.canvas_token) {
-        router.push("/dashboard");
+      if (mode === "signup") {
+        const { data } = result;
+        if (data?.session) {
+          router.push("/onboarding");
+        } else {
+          setError("Check your email for a confirmation link before signing in.");
+        }
       } else {
-        router.push("/onboarding");
+        const supabase = createClient();
+        const {
+          data: { user: signedInUser },
+        } = await supabase.auth.getUser();
+        const { data: profile } = signedInUser
+          ? await supabase
+              .from("profiles")
+              .select("onboarding_complete, canvas_token")
+              .eq("id", signedInUser.id)
+              .single()
+          : { data: null };
+
+        if (profile?.onboarding_complete && profile?.canvas_token) {
+          router.push("/dashboard");
+        } else {
+          router.push("/onboarding");
+        }
       }
+    } catch (error) {
+      setError(authErrorMessage(error, mode));
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -161,6 +164,8 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    aria-describedby={mode === "signup" ? "password-help" : undefined}
                     className={`${inputCls} pr-10`}
                   />
                   <button
@@ -175,8 +180,10 @@ export default function LoginPage() {
               </div>
             )}
 
+            {mode === "signup" && <p id="password-help" className="text-muted-foreground text-xs">Use at least 8 characters, with uppercase and lowercase letters, a number, and a symbol.</p>}
+
             {error && (
-              <p className="text-danger text-sm bg-danger-soft border border-danger/20 rounded-sm px-4 py-3">
+              <p role="alert" className="text-danger text-sm bg-danger-soft border border-danger/20 rounded-sm px-4 py-3">
                 {error}
               </p>
             )}
