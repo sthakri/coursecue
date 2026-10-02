@@ -1,4 +1,4 @@
-import AssignmentCard from "@/components/AssignmentCard";
+import AssignmentCard from "@/components/assignments/AssignmentCard";
 import { groupAssignments, type AssignmentFilter, type PlannerAssignment } from "@/lib/assignment-view";
 
 export default function AssignmentGroups({ assignments, filter, now, userTz }: {

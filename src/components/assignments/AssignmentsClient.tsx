@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import SyncNowButton from "@/components/SyncNowButton";
+import SyncNowButton from "@/components/canvas/SyncNowButton";
 import AssignmentGroups from "@/components/assignments/AssignmentGroups";
 import { ASSIGNMENT_FILTERS, parseAssignmentFilter, selectAssignments, type AssignmentFilter, type PlannerAssignment } from "@/lib/assignment-view";
 import { ArrowRight, Search } from "lucide-react";

@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { analyzeProductiveWindows, decayedScore, isActiveSlot } from "@/lib/ml";
 import { formatLocalHour, getDefaultTimezone, getLocalDay } from "@/lib/time";
-import BehavioralInsightCard from "@/components/BehavioralInsightCard";
-import ProductiveWindowsChart from "@/components/ProductiveWindowsChart";
+import BehavioralInsightCard from "@/components/insights/BehavioralInsightCard";
+import ProductiveWindowsChart from "@/components/insights/ProductiveWindowsChart";
 import { CheckCircle2, AlertTriangle, Calendar, BookOpen, Clock, Activity } from "lucide-react";
 
 export const metadata = { title: "Insights — DuePulse" };

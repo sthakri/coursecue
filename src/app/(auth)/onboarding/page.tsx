@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import OnboardingWizard from "@/components/OnboardingWizard";
+import OnboardingWizard from "@/components/auth/OnboardingWizard";
 
 export const metadata = {
   title: "Get Started — DuePulse",

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import SettingsForm from "@/components/SettingsForm";
-import TestNotifButton from "@/components/TestNotifButton";
-import PushNotificationButton from "@/components/PushNotificationButton";
+import SettingsForm from "@/components/settings/SettingsForm";
+import TestNotifButton from "@/components/push/TestNotifButton";
+import PushNotificationButton from "@/components/push/PushNotificationButton";
 import { saveNotificationSettings, pauseNotificationsAction } from "@/app/actions";
 import { FALLBACK_TIMEZONE } from "@/lib/time";
 import Link from "next/link";

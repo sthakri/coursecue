@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidElement, type ReactNode } from "react";
-import PushNotificationButton from "@/components/PushNotificationButton";
+import PushNotificationButton from "@/components/push/PushNotificationButton";
 import { clearPushSyncMarkers } from "@/lib/push";
 
 // A small hook harness keeps these browser API regressions runnable in Node.

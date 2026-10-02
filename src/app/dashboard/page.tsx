@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import SyncNowButton from "@/components/SyncNowButton";
-import WorkloadHeatmap from "@/components/WorkloadHeatmap";
-import PushNotificationButton from "@/components/PushNotificationButton";
-import MobileInstallGuide from "@/components/MobileInstallGuide";
+import SyncNowButton from "@/components/canvas/SyncNowButton";
+import WorkloadHeatmap from "@/components/insights/WorkloadHeatmap";
+import PushNotificationButton from "@/components/push/PushNotificationButton";
+import MobileInstallGuide from "@/components/pwa/MobileInstallGuide";
 import { getLocalDate, getDefaultTimezone } from "@/lib/time";
 import { BookOpen, AlertTriangle, CalendarClock, RefreshCw } from "lucide-react";
 import Link from "next/link";

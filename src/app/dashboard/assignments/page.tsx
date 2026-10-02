@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import StressAlert from "@/components/StressAlert";
-import SyncNowButton from "@/components/SyncNowButton";
-import AssignmentsClient from "@/components/AssignmentsClient";
+import StressAlert from "@/components/assignments/StressAlert";
+import SyncNowButton from "@/components/canvas/SyncNowButton";
+import AssignmentsClient from "@/components/assignments/AssignmentsClient";
 import { coerceTimezone, COMPLETED_RETENTION_DAYS } from "@/lib/time";
 import { RefreshCw } from "lucide-react";
 import { readAllPages } from "@/lib/read-all-pages";

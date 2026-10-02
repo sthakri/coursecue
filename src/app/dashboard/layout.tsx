@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import AutoSync from "@/components/AutoSync";
-import ProductiveWindowTracker from "@/components/ProductiveWindowTracker";
-import TokenExpiredBanner from "@/components/TokenExpiredBanner";
-import MobileBrowserGate from "@/components/MobileBrowserGate";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import AutoSync from "@/components/canvas/AutoSync";
+import ProductiveWindowTracker from "@/components/insights/ProductiveWindowTracker";
+import TokenExpiredBanner from "@/components/canvas/TokenExpiredBanner";
+import MobileBrowserGate from "@/components/pwa/MobileBrowserGate";
 
 export default async function DashboardLayout({
   children,
