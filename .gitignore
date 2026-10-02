@@ -1,7 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
+# Dependencies
+/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,84 +8,60 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Build output and test coverage
 /.next/
 /out/
+/build/
+/coverage/
+*.tsbuildinfo
+next-env.d.ts
 
-# production
-/build
-
-# misc
-.DS_Store
+# Credentials and local service configuration
+.env*
 *.pem
+.mcp.json
+/.vercel/
+/.trigger/
+/supabase/.temp/
 
-# debug
+# Generated PWA files
+/public/sw.js
+/public/worker-*.js
+/public/workbox-*.js
+
+# Local agent instructions, documentation, and personal notes
+/AGENTS.md
+/CLAUDE.md
+/docs/
+/ui-registry.md
+/CONTRIBUTING.md
+/DEPLOYMENT.md
+/ARCHITECTURE.md
+/.github/instructions/
+/.github/prompts/
+/.agents/
+/.claude/
+/skills-lock.json
+/.claudeignore
+/memory.md
+/.zcode/
+/plans/
+/components.json
+/database.types.ts
+
+# Local database utilities
+/supabase/test-nudge-ai.mjs
+/supabase/wipe-test-data.mjs
+/supabase/migrate-encrypt-tokens.ts
+
+# Local media exports and development logs
+/brag-output/
+/dev-server.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# MCP config contains your Supabase service role key
-.mcp.json
-
-# Claude Code files that should not be committed
-.claude/
-
-# Node and build artifacts (usually already in Next.js default)
-node_modules/
-.next/
-out/
-build/
-
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-/database.types.ts
-
-.trigger
-DEPLOYMENT.md
-
-# Internal agent/coding docs — not for public repo
-/AGENTS.md
-/CLAUDE.md
-/docs/
-/.github/instructions/
-/.github/prompts/
-/.agents/
-/skills-lock.json
-/.claudeignore
-
-# shadcn/ui config for public repos
-components.json
-
-# Supabase CLI temp files
-/supabase/.temp/
-
-# PWA service worker build artifacts (auto-generated on build)
-public/sw.js
-public/worker-*.js
-public/workbox-*.js
-
-# Favicon - use public/favicon.ico instead
+# OS files and duplicate favicon (public/favicon.ico is used)
+.DS_Store
 src/app/favicon.ico
-
-# Local dev utilities & personal notes (not for public repo)
-/memory.md
-/.zcode/
-/supabase/test-nudge-ai.mjs
-/supabase/wipe-test-data.mjs
-/supabase/migrate-encrypt-tokens.ts
