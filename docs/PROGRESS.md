@@ -139,3 +139,6 @@ Six separate commits pushed through 5767938: three-day overdue limit and bounded
 Verification: 185 tests, ESLint and webpack production build pass. Local isolated browser verified filters, counts, pagination, older-overdue disclosure, responsive layouts and zero console errors. Synthetic preview route removed before build; no sample data shipped. Authenticated production mutations and device notification delivery have not been exercised. Trigger.dev deployment is separate from Git push and must be confirmed before claiming the new reminder behavior is live.
 
 Production follow-up: with explicit user approval, Trigger.dev deployment e7rmvuba completed successfully as production version 20261002.1. The new background code is deployed; real device notification delivery remains unverified.
+
+## October 1 — screenshot-based Canvas theme correction
+The user's two actual TXST Canvas dashboard references replace the prior parchment/brass palette. Shared theme uses white workspace, exact #4B1610 rail, ivory nav labels, dark headings, neutral inputs/dividers, blue coursework/chart accents, and white active navigation. Dashboard banners are replaced by white headings; assignment rows use blue icon/deadline tiles. Public, auth and install screens match. ui-registry.md records the current baseline. No temporary synthetic preview is shipped.

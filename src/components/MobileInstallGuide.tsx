@@ -48,9 +48,9 @@ export default function MobileInstallGuide() {
   }
 
   return (
-    <div className="rounded-sm bg-primary-soft border border-primary/20 p-4 mb-5 flex flex-col gap-3">
+    <div className="rounded-sm bg-info-soft border border-info/20 p-4 mb-5 flex flex-col gap-3">
       <div className="flex items-start gap-3">
-        <Smartphone className="text-primary w-5 h-5 mt-0.5 shrink-0" />
+        <Smartphone className="text-info w-5 h-5 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-foreground font-semibold text-sm">Add DuePulse to your Home Screen</p>
           <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
@@ -59,7 +59,7 @@ export default function MobileInstallGuide() {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => setExpanded(!expanded)}
-            className="text-primary hover:text-primary-hover text-xs font-medium bg-transparent px-2 py-1 rounded-sm hover:bg-primary-soft transition-colors">
+            className="text-info hover:text-info-hover text-xs font-medium bg-transparent px-2 py-1 rounded-sm hover:bg-info-soft transition-colors">
             {expanded ? "Hide" : "How?"}
           </button>
           <button type="button" onClick={handleDismiss} className="text-muted-foreground hover:text-muted-foreground transition-colors bg-transparent p-1" title="Dismiss">
@@ -76,7 +76,7 @@ export default function MobileInstallGuide() {
                 {i + 1}
               </span>
               <div className="flex items-center gap-2 min-w-0">
-                <s.icon className="text-primary w-4 h-4 shrink-0" />
+                <s.icon className="text-info w-4 h-4 shrink-0" />
                 <p className="text-muted-foreground text-xs leading-snug">{s.label}</p>
               </div>
             </div>

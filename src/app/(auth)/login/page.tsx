@@ -147,7 +147,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => { setMode("reset"); setError(""); }}
-                      className="text-primary text-xs hover:text-primary-hover transition-colors bg-transparent"
+                      className="text-info text-xs hover:text-info-hover transition-colors bg-transparent"
                     >
                       Forgot password?
                     </button>
@@ -196,14 +196,14 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
-              className="text-primary hover:text-primary-hover font-medium transition-colors bg-transparent"
+              className="text-info hover:text-info-hover font-medium transition-colors bg-transparent"
             >
               {mode === "signin" ? "Sign up" : "Sign in"}
             </button>
           </p>
 
           <div className="text-center mt-6">
-            <Link href="/" className="text-muted-foreground hover:text-muted-foreground text-sm transition-colors">
+            <Link href="/" className="text-info hover:text-info-hover text-sm transition-colors">
               ← Back to homepage
             </Link>
           </div>

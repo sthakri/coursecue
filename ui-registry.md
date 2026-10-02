@@ -1,138 +1,90 @@
 # DuePulse UI registry
 
-Updated 2026-10-01. Richer DuePulse palette requested by the user; supersedes the pale Canvas treatment.
-Research, palette and implementation schema: [docs/DESIGN.md](docs/DESIGN.md).
-Runtime tokens: `src/app/globals.css`. Vendor `src/components/ui/` files remain unchanged.
+Updated 2026-10-01. The user's two Texas State Canvas dashboard screenshots are the current visual reference and supersede the wine/parchment/brass treatment.
+Runtime tokens: `src/app/globals.css`. Vendor `src/components/ui/` files stay unchanged.
 
-## Consistency audit
+## Reference and consistency audit
 
-Public, auth, install, dashboard, assignments, insights, settings, loading, error, 404 and notification components share semantic tokens. Wine actions #7D233C, deep wine navigation #35131D, parchment background #DDD0BD, cream cards #FAF4E9 and brass #EDBF73 create a stronger visual hierarchy. Dark page headers anchor the workspace. Text contrast is regression-tested at 4.5:1 and input boundaries at 3:1. Imported course colors remain data accents; course names use readable neutral text.
+Sampled reference colors: white workspace/cards #FFFFFF, maroon navigation #4B1610, ivory navigation labels #E1D9CE, dark headings #273540, neutral controls #F2F4F4, borders #D7DADE, and blue coursework accents #E0EBF5. DuePulse's blue text #0069B5, muted text #526575 and status text are chosen to meet text contrast requirements. These are screenshot-based adaptations; DuePulse keeps its own lightning identity.
 
-### Auth brand panel
-
-File: `src/components/AuthBrandPanel.tsx` · Updated 2026-10-01
-
-| Property | Pattern |
-| --- | --- |
-| Background | `bg-sidebar` |
-| Text | `text-sidebar-foreground`, `text-sidebar-muted` |
-| Heading | `text-3xl font-bold leading-tight` |
-| Divider | `border-sidebar-border` |
-| Spacing | `p-10`, `mt-4`, `mt-8` |
-| Shadow | None |
-| Accent | `text-brand-gold`, `border-brand-gold/40` on maroon only |
-
-Shared by login and password reset. Keep content surfaces cream and use the panel only at desktop widths.
+The reference has no tan workspace, gold selection, or dark page title banners. Maroon belongs to navigation and primary/selected controls. Content surfaces stay white. Blue identifies coursework and links; gray separates controls and sections. Green/red indicate labeled status. Existing course colors remain small data markers, never text colors.
 
 ### Navigation
 
-File: `src/components/DashboardSidebar.tsx` · Updated 2026-10-01
+File: `src/components/DashboardSidebar.tsx`
 
 | Property | Pattern |
 | --- | --- |
-| Background | `bg-sidebar` |
-| Border | `border-sidebar-border` |
-| Radius | `rounded-sm` |
-| Inactive text | `text-sidebar-muted` |
-| Active | `bg-sidebar-primary text-sidebar-primary-foreground`, `aria-current="page"` |
+| Rail | `bg-sidebar`, 96px desktop, icon above label |
+| Inactive | `text-sidebar-muted` |
+| Active | `bg-sidebar-primary text-sidebar-primary-foreground`, white row with maroon text and `aria-current="page"` |
 | Hover | `hover:bg-sidebar-accent hover:text-sidebar-foreground` |
-| Row spacing | `px-3 py-2.5 gap-3` |
-| Focus | White outline inside maroon navigation |
-| Shadow | Drawer/dialog only: `shadow-lg` |
+| Focus | Ivory outline on maroon; blue inset outline on the selected white row |
+| Mobile | 256px drawer with horizontal icon/label rows |
+| Identity | Ivory lightning; own DuePulse identity |
 
-Collapsed links retain accessible names. The mobile menu button needs clear space in headers and banners.
+Collapsed links and sign out retain explicit accessible names. Collapse/expand remains available by keyboard.
 
-### Panels and charts
+### Page headings and panels
 
-Files: `WorkloadHeatmap.tsx`, `ProductiveWindowsChart.tsx`, `BehavioralInsightCard.tsx`, dashboard pages · Updated 2026-10-01
-
-| Property | Pattern |
-| --- | --- |
-| Background | `bg-card` |
-| Border | `border border-border` |
-| Radius | `rounded-sm` |
-| Heading | `text-foreground font-semibold text-base` |
-| Supporting text | `text-muted-foreground text-xs` or `text-sm` |
-| Spacing | `p-5 sm:p-6`, `gap-5` |
-| Shadow | None |
-| SVG colors | `var(--primary)`, `var(--primary-hover)`, `var(--muted-foreground)`, `var(--chart-empty)` |
-
-D3 interpolates resolved token values. Cell numbers choose black/white from fill luminance with at least 4.5:1 contrast. Charts expose headings and accessible descriptions. Dense activity grids scroll within their panel on mobile.
-
-### Assignment cards and filters
-
-Files: `src/components/AssignmentCard.tsx`, `AssignmentsClient.tsx` · Updated 2026-10-01
+Files: dashboard, assignments, insights, settings, `WorkloadHeatmap.tsx`, `SettingsForm.tsx`
 
 | Property | Pattern |
 | --- | --- |
-| Card | `bg-card border-border rounded-sm p-4 gap-2 shadow-none` |
-| Completed surface | `bg-surface-subtle` |
-| Title | `text-foreground font-semibold text-base` |
-| Course label | `text-muted-foreground text-xs`, reserve space for card actions |
-| Hover | `hover:border-primary/40 hover:bg-surface-subtle` |
-| Selected filter | `bg-primary border-primary text-primary-foreground`, `aria-pressed` |
-| Selected course | `bg-primary-soft border-primary text-foreground` |
-| Status | `bg-danger-soft text-danger`, `bg-warning-soft text-warning`, `bg-success-soft text-success` |
+| Page | `bg-background text-foreground` (white) |
+| Page heading | `text-2xl sm:text-3xl font-semibold`, white toolbar and neutral bottom border |
+| Supporting section heading | `text-2xl font-semibold` or `text-lg font-semibold` in cards |
+| Description | `text-muted-foreground text-sm` |
+| Panel | `bg-card border border-border rounded-md`, subtle `shadow-sm` where grouped content needs separation |
+| Spacing | `p-5 sm:p-6`, `gap-5`/`gap-6` |
+| Charts | Blue data fills `--chart-1`, `--chart-high`, gray `--chart-empty`; maroon may mark today |
 
-Status must include text. Keep card text fully opaque; use course colors only as accents.
-Assignment actions use visible labels and a 40px minimum height. Mark complete uses
-`bg-primary text-primary-foreground`; Dismiss uses `border-input` and opens an inline
-confirmation (`bg-warning-soft border-warning`). Explain that these actions update
-DuePulse only. Disable both actions while either request is pending.
+No maroon-and-gold page banners or decorative thick card borders. Chart labels choose black/white from fill luminance. Charts have accessible descriptions; wide activity grids scroll inside their panel.
 
-Assignment views use compact full-width rows, date headings, and pages of 20.
-The title panel uses `bg-sidebar text-sidebar-foreground border-t-4 border-brand-gold`.
-Filters have a 44px minimum height; search and native selects share labelled controls.
-Older overdue work is collapsed with a count and reminder policy. Query parameters
-preserve filters on refresh/back; counts reflect the current course and search.
+### Assignment rows and controls
 
-### Forms and actions
-
-Files: auth pages, `OnboardingWizard.tsx`, `SettingsForm.tsx`, sync/push/test buttons · Updated 2026-10-01
+Files: `AssignmentCard.tsx`, `AssignmentsClient.tsx`, `assignments/AssignmentGroups.tsx`
 
 | Property | Pattern |
 | --- | --- |
-| Input | `rounded-sm bg-background border border-input text-foreground` |
-| Placeholder | `placeholder:text-muted-foreground` |
-| Label | `text-body text-sm`, associated with the field |
-| Primary action | `rounded-sm bg-primary hover:bg-primary-hover text-primary-foreground shadow-none` |
-| Secondary action | `bg-card border-border text-muted-foreground hover:bg-surface-subtle` |
-| Focus | 2px semantic maroon outline; radios highlight their containing label |
-| Switch | `bg-input peer-checked:bg-primary`, named `role="switch"` |
-| Selected radio | `border-primary bg-primary-soft`; native keyboard selection |
+| Row | `bg-card border-b border-border p-4 rounded-sm shadow-none` |
+| Icon tile | `bg-info-soft text-info`, desktop only |
+| Title | `text-info font-semibold text-sm`; completed text stays muted and struck through |
+| Course | `text-muted-foreground text-xs`, small course-color marker |
+| Deadline | `bg-info-soft text-info`; overdue uses labeled danger status |
+| Completed | `bg-surface-subtle`, visible status and restore action |
+| Date heading | `text-foreground text-sm font-semibold`, natural case |
+| Selected view | `bg-primary border-primary text-primary-foreground`, `aria-pressed` |
+| Search/select | White background, `border-input`, labels and 44px minimum height |
+| Action | Maroon primary, neutral outlined secondary, 40px minimum height |
 
-Keep controlled settings stable after save. Hidden pause-duration buttons are disabled. Password/token visibility controls have explicit names.
+Date groups, pages of 20, range choices, URL filters and overdue resolution behavior remain in place. Dismiss uses an inline confirmation. Both actions explain that they update DuePulse only and are disabled during pending requests.
 
-### Alerts, dialogs and toasts
+### Forms, alerts and auth
 
-Files: `StressAlert.tsx`, `TokenExpiredBanner.tsx`, `DashboardSidebar.tsx`, root layout · Updated 2026-10-01
-
-| Property | Pattern |
-| --- | --- |
-| Warning | `bg-warning-soft border-warning/25 text-warning` |
-| Error | `bg-danger-soft border-danger/30 text-danger` |
-| Dialog | `rounded-md bg-card border-border p-6 shadow-lg` |
-| Overlay | `bg-overlay/55` |
-| Toast | Light theme, white popover, neutral text/border, maroon action |
-| Spacing | `p-4 gap-3`; banner stacks on mobile |
-
-Errors and warnings include icons/text. Reserve left space for the mobile menu in shell banners. Dismiss buttons have accessible names.
-
-### Public and installation screens
-
-Files: home, features, how-it-works, install, `MobileInstallGuide.tsx`, error/loading/404 · Updated 2026-10-01
+Files: auth, `AuthBrandPanel.tsx`, onboarding, settings, notifications and banners
 
 | Property | Pattern |
 | --- | --- |
-| Page | `bg-background text-foreground` |
-| Header | `bg-sidebar text-sidebar-foreground border-brand-gold/40`, ivory nav links, white action with maroon text |
-| Blocks | `bg-card border-border rounded-sm` |
-| Accent | `text-primary`, `bg-primary-soft` |
-| Body | `text-muted-foreground`, readable opaque text |
-| Skeleton | `bg-surface-subtle` or `bg-muted` |
-| Shadow | None |
+| Input | `bg-background border-input rounded-sm text-foreground` |
+| Primary button | `bg-primary hover:bg-primary-hover text-primary-foreground` |
+| Secondary | White/neutral gray, visible border, dark text |
+| Text link | `text-info hover:text-info-hover` |
+| Focus | 2px blue outline, 3px offset |
+| Auth brand panel | Maroon/ivory, neutral sidebar divider; white form workspace |
+| Error | `bg-danger-soft text-danger`, text and icon |
+| Warning | `bg-warning-soft text-warning`, text and icon |
+| Success | `bg-success-soft text-success`, visible label |
+| Dialog/toast | White semantic card/popover, neutral border, maroon primary action |
 
-Public header brand marks use `text-brand-gold` on maroon, with `bg-sidebar-accent`. Header actions use `bg-sidebar-primary text-sidebar-primary-foreground hover:bg-primary-soft`. White focus outlines keep header links visible. Body actions remain maroon with white text.
+Settings headings use foreground text and subtle neutral panel borders. All existing notification, login and onboarding behavior is preserved.
 
-PWA uses a white splash background and TXST Canvas maroon browser chrome. App icons share the authored maroon-and-white lightning SVG in `public/icons/icon.svg`.
+### Public and install pages
 
+Files: home, features, how-it-works, install, `MobileInstallGuide.tsx`, loading/error/404
+
+White page backgrounds, dark headings, neutral separators and blue information tiles. Public navigation is maroon/ivory with a white action; body calls to action are maroon/white. Home hero stays white. PWA splash is white, browser chrome is #4B1610, and existing maroon/white icons match the palette.
+
+## Verification
+
+Contrast regression covers normal text at 4.5:1, input boundaries at 3:1, and chart interpolation. Browser checks cover the actual planner/settings/chart components using a removable synthetic fixture and public/auth/install pages at mobile and desktop widths. No fixture is shipped.

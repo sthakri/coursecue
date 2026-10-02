@@ -71,12 +71,12 @@ export default function InstallPage() {
     <main className="min-h-screen bg-background flex flex-col items-center justify-start px-4 pt-14 pb-10 text-foreground">
       {/* Logo + headline */}
       <div className="flex flex-col items-center text-center mb-8">
-        <div className="w-16 h-16 rounded-sm bg-primary-soft border border-primary/20 flex items-center justify-center mb-4">
-          <Smartphone className="text-primary w-8 h-8" />
+        <div className="w-16 h-16 rounded-sm bg-info-soft border border-info/20 flex items-center justify-center mb-4">
+          <Smartphone className="text-info w-8 h-8" />
         </div>
         <div className="flex items-center gap-2 mb-3">
-          <div className="flex h-6 w-6 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
-            <Zap size={11} className="text-primary" fill="currentColor" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-sm border border-info/40 bg-info-soft">
+            <Zap size={11} className="text-info" fill="currentColor" />
           </div>
           <span className="font-bold text-foreground text-sm tracking-tight">DuePulse</span>
         </div>
@@ -110,7 +110,7 @@ export default function InstallPage() {
                 {i + 1}
               </span>
               <div className="flex items-center gap-2 min-w-0">
-                <step.icon className="text-primary w-4 h-4 shrink-0" />
+                <step.icon className="text-info w-4 h-4 shrink-0" />
                 <p className="text-muted-foreground text-sm leading-snug">{step.label}</p>
               </div>
             </div>
@@ -124,8 +124,8 @@ export default function InstallPage() {
       </div>
 
       {/* Why it matters */}
-      <div className="w-full max-w-xs rounded-sm bg-primary-soft border border-primary/20 p-4 mb-8">
-        <p className="text-primary text-sm font-semibold mb-1">Why does this matter?</p>
+      <div className="w-full max-w-xs rounded-sm bg-info-soft border border-info/20 p-4 mb-8">
+        <p className="text-info text-sm font-semibold mb-1">Why does this matter?</p>
         <p className="text-muted-foreground text-sm leading-relaxed">
           {platform === "ios"
             ? "DuePulse\u2019s core feature is nudging you at the right time. Browser tabs can\u2019t deliver background push notifications \u2014 the Home Screen app can."

@@ -44,12 +44,12 @@ export default async function HomePage() {
   return (
     <main className="flex flex-col flex-1 min-h-screen bg-background text-foreground">
       {/* ── Sticky nav ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-brand-gold/40 bg-sidebar text-sidebar-foreground">
+      <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
         <div className="max-w-6xl mx-auto px-5 py-3 sm:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-brand-gold/40 bg-sidebar-accent shadow-none">
-              <Zap size={15} className="text-brand-gold" fill="currentColor" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-sidebar-border bg-sidebar-accent shadow-none">
+              <Zap size={15} className="text-sidebar-foreground" fill="currentColor" />
             </div>
             <span className="font-bold text-lg text-sidebar-foreground tracking-tight">
               DuePulse
@@ -75,7 +75,7 @@ export default async function HomePage() {
           {/* CTA */}
           <Button
             asChild
-            className="bg-sidebar-primary hover:bg-primary-soft text-sidebar-primary-foreground font-semibold text-sm h-9 px-4 rounded-sm shadow-none transition-all duration-200"
+            className="bg-sidebar-primary hover:bg-secondary text-sidebar-primary-foreground font-semibold text-sm h-9 px-4 rounded-sm shadow-none transition-all duration-200"
           >
             <Link href="/login">Get Started</Link>
           </Button>
@@ -83,26 +83,26 @@ export default async function HomePage() {
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="bg-sidebar text-sidebar-foreground flex flex-col items-center justify-center px-5 pt-16 pb-16 sm:pt-20 text-center w-full border-b-4 border-brand-gold">
+      <section className="bg-background text-foreground flex flex-col items-center justify-center px-5 pt-16 pb-16 sm:pt-20 text-center w-full border-b border-border">
         {/* Eyebrow */}
-        <div className="mb-6 inline-flex items-center gap-2 border-b border-brand-gold/50 pb-2 text-sm font-medium text-brand-gold">
+        <div className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <Zap size={13} />
           For students, by a student
         </div>
 
-        <h1 className="font-extrabold text-4xl sm:text-5xl md:text-6xl leading-[1.05] tracking-tight max-w-2xl mb-5">
+        <h1 className="font-bold text-3xl sm:text-4xl leading-tight max-w-2xl mb-5">
           Less sorting.{" "}
-          <span className="text-brand-gold">More studying.</span>
+          <span className="text-foreground">More studying.</span>
         </h1>
 
-        <p className="text-sidebar-muted text-lg max-w-xl leading-relaxed mb-8">
+        <p className="text-muted-foreground text-lg max-w-xl leading-relaxed mb-8">
           Your Canvas assignments, organised around what’s next.
           Plan the next two weeks, clear finished work, and get reminders that know when to stop.
         </p>
 
         <Button
           asChild
-          className="bg-sidebar-primary hover:bg-primary-soft text-sidebar-primary-foreground font-bold px-7 py-3 text-base h-auto rounded-sm shadow-none transition-colors"
+          className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-7 py-3 text-base h-auto rounded-sm shadow-none transition-colors"
         >
           <Link href="/login">Connect Your Canvas →</Link>
         </Button>
@@ -114,10 +114,10 @@ export default async function HomePage() {
           {features.map(({ icon: Icon, title, body }) => (
             <div
               key={title}
-              className="rounded-sm bg-card border border-border p-6 shadow-none hover:border-primary/40 hover:bg-surface-subtle transition-all duration-200"
+              className="rounded-sm bg-card border border-border p-6 shadow-none hover:border-info/40 hover:bg-surface-subtle transition-all duration-200"
             >
-              <div className="w-10 h-10 rounded-sm bg-primary-soft border border-primary/20 flex items-center justify-center mb-4">
-                <Icon className="text-primary" size={18} />
+              <div className="w-10 h-10 rounded-sm bg-info-soft border border-info/20 flex items-center justify-center mb-4">
+                <Icon className="text-info" size={18} />
               </div>
               <h2 className="text-foreground font-semibold text-base mb-2">
                 {title}
@@ -130,7 +130,7 @@ export default async function HomePage() {
 
       <footer className="py-8 text-center border-t border-border mt-auto">
         <p className="text-muted-foreground text-sm">
-          <Link href="/" className="text-primary hover:text-primary-hover transition-colors">
+          <Link href="/" className="text-info hover:text-info-hover transition-colors">
             DuePulse
           </Link>{" "}
           — Built for students, by a student.

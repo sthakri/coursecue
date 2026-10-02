@@ -42,11 +42,11 @@ export default function HowItWorksPage() {
   return (
     <div className="bg-background min-h-screen flex flex-col text-foreground">
       {/* Nav */}
-      <header className="sticky top-0 z-40 border-b border-brand-gold/40 bg-sidebar text-sidebar-foreground">
+      <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-brand-gold/40 bg-sidebar-accent shadow-none">
-              <Zap size={15} className="text-brand-gold" fill="currentColor" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-sidebar-border bg-sidebar-accent shadow-none">
+              <Zap size={15} className="text-sidebar-foreground" fill="currentColor" />
             </div>
             <span className="font-bold text-sidebar-foreground tracking-tight">DuePulse</span>
           </Link>
@@ -54,7 +54,7 @@ export default function HowItWorksPage() {
             <Link href="/features" className="text-sm text-sidebar-muted hover:text-sidebar-foreground transition-colors">Features</Link>
             <Link href="/how-it-works" className="text-sm text-sidebar-foreground font-medium">How it works</Link>
           </nav>
-          <Link href="/login" className="rounded-sm bg-sidebar-primary hover:bg-primary-soft text-sidebar-primary-foreground text-sm font-semibold px-4 py-2 transition-colors shadow-none">
+          <Link href="/login" className="rounded-sm bg-sidebar-primary hover:bg-secondary text-sidebar-primary-foreground text-sm font-semibold px-4 py-2 transition-colors shadow-none">
             Get Started
           </Link>
         </div>
@@ -62,12 +62,12 @@ export default function HowItWorksPage() {
 
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-5 pt-20 pb-16 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary-soft px-3 py-1 text-xs font-medium text-primary mb-6">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-info/40 bg-info-soft px-3 py-1 text-xs font-medium text-info mb-6">
           <Zap size={11} fill="currentColor" /> 4 steps
         </span>
         <h1 className="text-foreground font-extrabold text-4xl sm:text-5xl leading-tight tracking-tight mb-4">
           From Canvas to calm —{" "}
-          <span className="text-primary">here&apos;s how it works.</span>
+          <span className="text-info">here&apos;s how it works.</span>
         </h1>
         <p className="text-body text-lg leading-relaxed max-w-xl mx-auto">
           DuePulse is a system, not just an app. Each piece builds on the last, creating something that gets smarter the longer you use it.
@@ -81,13 +81,13 @@ export default function HowItWorksPage() {
           {steps.map(({ number, icon: Icon, title, body, detail }, i) => (
             <div key={number} className="flex gap-6 sm:gap-8 pb-10 last:pb-0">
               <div className="flex flex-col items-center gap-0 shrink-0">
-                <div className="w-14 h-14 rounded-sm bg-card border border-primary/30 flex items-center justify-center relative z-10 shadow-none">
-                  <Icon size={22} className="text-primary" />
+                <div className="w-14 h-14 rounded-sm bg-card border border-info/30 flex items-center justify-center relative z-10 shadow-none">
+                  <Icon size={22} className="text-info" />
                 </div>
               </div>
               <div className="flex-1 min-w-0 pt-2 pb-2">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-primary font-bold text-sm font-mono">{number}</span>
+                  <span className="text-info font-bold text-sm font-mono">{number}</span>
                   <h2 className="text-foreground font-bold text-xl leading-tight">{title}</h2>
                 </div>
                 <p className="text-body text-base leading-relaxed mb-3">{body}</p>
@@ -125,7 +125,7 @@ export default function HowItWorksPage() {
 
       {/* CTA */}
       <section className="max-w-2xl mx-auto px-5 pb-24 text-center">
-        <div className="rounded-sm border border-primary/25 bg-primary-soft p-10">
+        <div className="rounded-sm border border-info/25 bg-info-soft p-10">
           <h2 className="text-foreground font-bold text-2xl mb-3">See it for yourself</h2>
           <p className="text-body text-base mb-6">It takes two minutes to connect Canvas and the rest happens on its own.</p>
           <Link href="/login" className="inline-flex items-center gap-2 rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold px-7 py-3 text-base transition-colors shadow-none">
