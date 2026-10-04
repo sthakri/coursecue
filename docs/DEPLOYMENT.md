@@ -39,7 +39,7 @@ Confirm task versions and schedules in Trigger.dev:
 | Task | Schedule in source |
 | --- | --- |
 | `canvas-sync` | `5,35 * * * *` — every 30 minutes, UTC |
-| `nudge-engine` | `*/15 * * * *` — every 15 minutes, UTC |
+| `send-nudges` | `*/15 * * * *` — every 15 minutes, UTC |
 
 ## Database changes
 
@@ -60,5 +60,5 @@ A local build verifies compilation; it does not prove production credentials, re
 - [ ] Public pages, login, onboarding, and dashboard load; unauthenticated `/dashboard` redirects to `/login`.
 - [ ] Sync Now works and rate-limits to 429 on rapid repeats; heatmap and productive-windows chart render.
 - [ ] Push subscribe stores a `push_subscriptions` row; a test push arrives; sign-out removes the row.
-- [ ] `canvas-sync` and `nudge-engine` show deployed versions and schedules in Trigger.dev; `NUDGE_ENABLED=true` only when intended.
+- [ ] `canvas-sync` and `send-nudges` show deployed versions and schedules in Trigger.dev; `NUDGE_ENABLED=true` only when intended.
 - [ ] PWA installs and runs standalone; no horizontal overflow at 375px; `sw.js` registered.

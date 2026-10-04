@@ -29,7 +29,10 @@ The regression suite covers Canvas pagination and trust boundaries, assignment/q
 | Settings | Save/reload, invalid quiet-hour rejection, pause/resume passed; original settings restored. |
 | Desktop Web Push | Enable, normal test, silent test and disable passed. The account owner confirmed both tests appeared in system notifications; audible behavior was not independently verified. |
 | Responsive UI | Desktop at 1440px and narrow layout at 375px checked, including D3 charts, navigation, install guidance and feedback. No page-level horizontal overflow in checked views. |
-| Trigger.dev bundle | Production dry run passed. Hosted task deployment and scheduled execution are separate checks. |
+| Trigger.dev deployment | Production dry run passed; version `20261004.1` deployed successfully. Task IDs are `canvas-sync` and `send-nudges`. |
+| Vercel deployment | Commit `09aa113` reported a successful deployment; new feedback and install pages verified live. |
+| Anonymous access | Nine private production APIs returned 401; anonymous reads exposed zero rows across seven private tables. |
+| Sign-out | Returned to the home page; a subsequent dashboard request redirected to login. |
 
 The account had no overdue work for a live dismissal test. Dismissal validation and state retention have regression coverage. Creating accounts, changing credentials, and submitting real coursework were not part of the browser pass. Physical iPhone/Android acceptance remains required below.
 
