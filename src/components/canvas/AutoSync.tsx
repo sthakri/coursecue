@@ -10,6 +10,7 @@ const RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000;
 
 export default function AutoSync() {
   const router = useRouter();
+  const bumpAssignmentsVersion = useCourseCueStore((s) => s.bumpAssignmentsVersion);
   const setTokenExpired = useCourseCueStore((s) => s.setTokenExpired);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const backoffTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,6 +73,7 @@ export default function AutoSync() {
         }
         if (res.ok) {
           setTokenExpired(false);
+          bumpAssignmentsVersion();
           router.refresh();
         }
       } catch {
@@ -109,7 +111,7 @@ export default function AutoSync() {
       if (backoffTimeoutRef.current) clearTimeout(backoffTimeoutRef.current);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [router, setTokenExpired]);
+  }, [router, setTokenExpired, bumpAssignmentsVersion]);
 
   return null;
 }

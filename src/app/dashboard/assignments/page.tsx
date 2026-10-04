@@ -27,7 +27,7 @@ export default async function AssignmentsPage() {
   const [assignments, { data: profile }] = await Promise.all([
     readAllPages((from, to) => supabase
       .from("assignments")
-      .select("id, title, due_at, updated_at, points_possible, canvas_assignment_id, course_id, is_completed, courses(name, color)")
+      .select("id, title, due_at, updated_at, points_possible, html_url, canvas_assignment_id, course_id, is_completed, courses(name, color)")
       .eq("user_id", userId)
       .is("dismissed_at", null)
       .or(`is_completed.eq.false,and(is_completed.eq.true,updated_at.gte.${completedCutoff.toISOString()})`)

@@ -1,3 +1,4 @@
+import { readAllPages } from "@/lib/read-all-pages";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getCanvasAssignments,
@@ -26,6 +27,8 @@ type ExistingRow = {
   canvas_assignment_id: number;
   is_completed: boolean;
   dismissed_at: string | null;
+  updated_at?: string;
+  html_url?: string | null;
 };
 
 /**
@@ -110,11 +113,13 @@ export async function syncUserCanvas(
   userId: string,
 ): Promise<CanvasSyncResult> {
   // Read Canvas credentials from DB — never from request body.
-  const { data: profile } = await serviceClient
+  const { data: profile, error: profileError } = await serviceClient
     .from("profiles")
     .select("canvas_token, canvas_domain")
     .eq("id", userId)
     .single();
+
+  if (profileError) return { ok: false, reason: "db_error", message: "Could not load your Canvas connection. Try again." };
 
   if (!profile?.canvas_token || !profile?.canvas_domain) {
     return {
@@ -139,10 +144,8 @@ export async function syncUserCanvas(
   let assignments: Awaited<ReturnType<typeof getCanvasAssignments>>;
   let courses: Awaited<ReturnType<typeof getCanvasCourses>>;
   try {
-    [assignments, courses] = await Promise.all([
-      getCanvasAssignments(token, domain),
-      getCanvasCourses(token, domain),
-    ]);
+    courses = await getCanvasCourses(token, domain);
+    assignments = await getCanvasAssignments(token, domain, courses);
   } catch (err) {
     if (err instanceof CanvasAuthError) {
       return {
@@ -208,13 +211,22 @@ export async function syncUserCanvas(
     // (b) preserve
     // locally-marked completions Canvas can't see (offline/paper submissions),
     // (d) stamp updated_at when Canvas is what flips a row to completed.
-    const incomingCanvasIds = assignments.map((a) => a.canvas_assignment_id);
-    const { data: existingRows } = await serviceClient
+    const existingRows = await readAllPages((from, to) => serviceClient
       .from("assignments")
-      .select("id, canvas_assignment_id, is_completed, dismissed_at")
-      .eq("user_id", userId)
-      .in("canvas_assignment_id", incomingCanvasIds)
-      .throwOnError();
+      .select("id, canvas_assignment_id, is_completed, dismissed_at, updated_at, html_url")
+      .eq("user_id", userId).order("id").range(from, to));
+
+    // Upgrade legacy quiz/discussion identities only when the actual Canvas URL matches.
+    // This preserves that item's status without borrowing another assignment's state.
+    for (const assignment of assignments.filter(a => a.canvas_assignment_id < 0 && a.html_url)) {
+      if (existingRows.some(row => row.canvas_assignment_id === assignment.canvas_assignment_id)) continue;
+      const legacy = existingRows.find(row => row.canvas_assignment_id > 0 && row.html_url === assignment.html_url);
+      if (!legacy) continue;
+      await serviceClient.from("assignments").update({ canvas_assignment_id: assignment.canvas_assignment_id })
+        .eq("id", legacy.id).eq("user_id", userId).eq("canvas_assignment_id", legacy.canvas_assignment_id)
+        .throwOnError();
+      legacy.canvas_assignment_id = assignment.canvas_assignment_id;
+    }
 
     const { rows } = buildSyncPlan(
       assignments,
@@ -224,15 +236,7 @@ export async function syncUserCanvas(
       new Date().toISOString()
     );
 
-    if (rows.length > 0) {
-      for (const batch of partitionForUpsert(rows)) {
-        if (batch.length === 0) continue;
-        await serviceClient
-          .from("assignments")
-          .upsert(batch, { onConflict: "user_id,canvas_assignment_id" })
-          .throwOnError();
-      }
-    }
+    await persistSyncPlan(serviceClient, rows, existingRows);
 
     await stampLastSync();
     // rows written, not raw Canvas count — dismissed-skipped and
@@ -242,8 +246,38 @@ export async function syncUserCanvas(
     // Surface the real reason: "Database error" alone made two separate
     // outages undebuggable from the toast alone. PostgREST messages here may
     // name constraints but never include row values or tokens.
-    const detail = err instanceof Error ? err.message : String(err);
     console.error("Supabase sync error:", err);
-    return { ok: false, reason: "db_error", message: `Database error: ${detail}` };
+    return { ok: false, reason: "db_error", message: "Could not save your Canvas sync. Please try again." };
+  }
+}
+
+/** Metadata refreshes never write a stale local completion value. Canvas completion
+ * uses the version read at the start, so a concurrent user toggle wins. */
+export async function persistSyncPlan(
+  client: SupabaseClient<Database>, rows: TablesInsert<"assignments">[], existingRows: ExistingRow[],
+): Promise<void> {
+  const existing = new Map(existingRows.map(row => [row.canvas_assignment_id, row]));
+  for (let offset = 0; offset < rows.length; offset += 100) {
+    const batch = rows.slice(offset, offset + 100);
+    const fresh = batch.filter(row => !existing.has(row.canvas_assignment_id));
+    for (const group of partitionForUpsert(fresh)) {
+      if (group.length) await client.from("assignments").upsert(group,
+        { onConflict: "user_id,canvas_assignment_id", ignoreDuplicates: true }).throwOnError();
+    }
+    const metadata = batch.map(row => {
+      const { is_completed, updated_at, ...fields } = row;
+      void is_completed; void updated_at;
+      return fields;
+    });
+    await client.from("assignments").upsert(metadata, { onConflict: "user_id,canvas_assignment_id" }).throwOnError();
+    const transitions = batch.filter(row => row.updated_at && existing.get(row.canvas_assignment_id)?.updated_at);
+    for (let i = 0; i < transitions.length; i += 5) {
+      await Promise.all(transitions.slice(i, i + 5).map(row => {
+        const before = existing.get(row.canvas_assignment_id)!;
+        return client.from("assignments").update({ is_completed: true, updated_at: row.updated_at })
+          .eq("id", before.id).eq("user_id", row.user_id).eq("updated_at", before.updated_at!)
+          .eq("is_completed", false).is("dismissed_at", null).throwOnError();
+      }));
+    }
   }
 }

@@ -3,7 +3,7 @@ import { getLocalDate } from "@/lib/time";
 export type PlannerAssignment = {
   id: string; title: string; due_at: string | null; updated_at: string;
   is_completed: boolean; course_id: string; canvas_assignment_id: number;
-  points_possible: number | null; courses: { name: string; color: string } | null;
+  points_possible: number | null; html_url?: string | null; courses: { name: string; color: string } | null;
 };
 export const ASSIGNMENT_FILTERS = {
   upcoming: "Next up", overdue: "Overdue", completed: "Completed", all: "All open",

@@ -1,3 +1,4 @@
+vi.mock("@/lib/canvas-request", () => ({ canvasRequest: (...args: unknown[]) => fetch(...args as Parameters<typeof fetch>) }));
 import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("dns", () => ({ promises: { lookup: vi.fn(async () => [{ address: "8.8.8.8", family: 4 }]) } }));
 import { testCanvasConnection } from "@/lib/canvas";

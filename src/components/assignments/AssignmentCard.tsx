@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Check, FilePenLine } from "lucide-react";
+import { Check, FilePenLine, ExternalLink } from "lucide-react";
 import { useCourseCueStore } from "@/lib/store";
 
 interface AssignmentCardProps {
@@ -14,7 +14,7 @@ interface AssignmentCardProps {
   course_name: string;
   due_at: string | null;
   points_possible: number | null;
-  canvas_assignment_id: string;
+  html_url?: string | null;
   course_color?: string;
   userTz: string;
   is_completed?: boolean;
@@ -60,6 +60,7 @@ export default function AssignmentCard({
   course_name,
   due_at,
   points_possible,
+  html_url,
   course_color = "var(--primary)",
   userTz,
   is_completed = false,
@@ -77,6 +78,7 @@ export default function AssignmentCard({
     setCompleted(is_completed);
   }
 
+  const canvasUrl = html_url?.startsWith("https://") ? html_url : null;
   const dueInfo = due_at ? getDueDateInfo(due_at, userTz, now) : null;
   const isOverdue = !completed && (dueInfo?.isOverdue ?? false);
   const isDueSoon = !completed && (dueInfo?.isDueSoon ?? false);
@@ -137,7 +139,7 @@ export default function AssignmentCard({
       <div className="hidden sm:flex sm:col-start-1 sm:row-start-1 sm:row-span-3 min-h-16 items-center justify-center rounded-sm bg-info-soft text-info" aria-hidden="true"><FilePenLine size={24} /></div>
       <p className="sm:col-start-2 sm:row-start-2 text-muted-foreground text-xs leading-normal flex items-center gap-2"><span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: course_color }} aria-hidden="true" />{course_name}</p>
       <p className={cn("sm:col-start-2 sm:row-start-1 text-info font-semibold text-sm break-words", completed && "line-through text-muted-foreground")}>
-        {title}
+        {canvasUrl ? <a href={canvasUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1.5 underline-offset-4 hover:underline" aria-label={`${title} (opens in Canvas in a new tab)`}>{title}<ExternalLink size={14} className="mt-0.5 shrink-0" aria-hidden="true" /></a> : title}
       </p>
       <div className="sm:col-start-3 sm:row-start-1 sm:row-span-3 flex flex-wrap items-center gap-2">
         <button

@@ -8,6 +8,7 @@ import { useCourseCueStore } from "@/lib/store";
 
 export default function SyncNowButton() {
   const router = useRouter();
+  const bumpAssignmentsVersion = useCourseCueStore((s) => s.bumpAssignmentsVersion);
   const isSyncing = useCourseCueStore((s) => s.isSyncing);
   const setIsSyncing = useCourseCueStore((s) => s.setIsSyncing);
   const setTokenExpired = useCourseCueStore((s) => s.setTokenExpired);
@@ -39,7 +40,8 @@ export default function SyncNowButton() {
       }
       setTokenExpired(false);
       toast.success(`Synced ${data.synced ?? 0} assignments`);
-      router.refresh();
+      bumpAssignmentsVersion();
+          router.refresh();
     } catch { toast.error("Network error — sync failed"); }
     finally { setIsSyncing(false); }
   }

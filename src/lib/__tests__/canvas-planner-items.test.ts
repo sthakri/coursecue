@@ -44,7 +44,7 @@ describe("plannerItemToAssignment", () => {
     expect(result!.html_url).toBe("https://canvas.txstate.edu/courses/100/quizzes/555");
   });
 
-  it("keeps ungraded quizzes, falling back to plannable_id", () => {
+  it("keeps ungraded quizzes in a separate identity namespace", () => {
     const ungradedQuiz = {
       course_id: 100,
       plannable_type: "quiz",
@@ -61,7 +61,7 @@ describe("plannerItemToAssignment", () => {
       submissions: false,
     };
     const result = plannerItemToAssignment(ungradedQuiz, "school.instructure.com");
-    expect(result!.canvas_assignment_id).toBe(777);
+    expect(result!.canvas_assignment_id).toBe(-1554);
     expect(result!.due_at).toBe("2026-09-22T10:00:00Z"); // plannable_date fallback
     expect(result!.is_completed).toBe(false);
   });
@@ -120,4 +120,14 @@ describe("plannerItemToAssignment", () => {
     expect(plannerItemToAssignment(null, "x")).toBeNull();
     expect(plannerItemToAssignment("nope", "x")).toBeNull();
   });
+});
+
+it("separates assignment, quiz and discussion IDs even when Canvas reuses a number", () => {
+  const ids = ["assignment", "quiz", "discussion_topic"].map(plannable_type => plannerItemToAssignment({
+    course_id: 100, plannable_type, plannable_id: 42, plannable: { title: "Coursework" },
+  }, "school.instructure.com")!.canvas_assignment_id);
+  expect(new Set(ids).size).toBe(3);
+});
+it.each(["javascript:alert(1)", "https://other.example/course", "//other.example/course"])("does not expose unsafe coursework link %s", html_url => {
+  expect(plannerItemToAssignment({ ...gradedQuizItem, html_url }, "school.instructure.com")!.html_url).toBeNull();
 });

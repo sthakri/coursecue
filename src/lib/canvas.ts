@@ -1,3 +1,4 @@
+import { canvasRequest } from "@/lib/canvas-request";
 import { TablesInsert } from "@/database.types";
 
 type CanvasAssignment = Omit<TablesInsert<"assignments">, "user_id" | "course_id"> & {
@@ -19,35 +20,13 @@ export class CanvasAuthError extends Error {
   }
 }
 
+class CanvasPermissionError extends Error {}
+
 const ALLOWED_CANVAS_DOMAINS = /^(?:(?:[a-zA-Z0-9-]+\.)+(?:instructure\.com|instructure\.io)|[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,})$/;
 
-function isPrivateIP(hostname: string): boolean {
-  return /^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.|0\.|127\.|169\.254\.|fc|fe80)/i.test(hostname);
-}
-
-async function validateCanvasDomain(domain: string): Promise<void> {
-  const hostname = domain.replace(/:\d+$/, "").toLowerCase();
-  if (isPrivateIP(hostname)) {
-    throw new Error(`Blocked private/internal domain: "${domain}".`);
-  }
-  if (!ALLOWED_CANVAS_DOMAINS.test(hostname)) {
-    throw new Error(
-      `Blocked disallowed Canvas domain: "${domain}". Only *.instructure.com, *.instructure.io, or standard school domains are permitted.`
-    );
-  }
-  // DNS resolves HERE, server-side: a hostname that passes the allowlist regex
-  // can still point at internal IPs (SSRF). Resolve and reject private ranges.
-  const { promises: dns } = await import("dns");
-  try {
-    const addrs = await dns.lookup(hostname, { all: true });
-    for (const { address } of addrs) {
-      if (isPrivateIP(address)) {
-        throw new Error(`Blocked domain resolving to private IP: "${domain}".`);
-      }
-    }
-  } catch (err) {
-    if (err instanceof Error && err.message.startsWith("Blocked")) throw err;
-    throw new Error(`Canvas domain does not resolve: "${domain}".`);
+function validateCanvasDomain(domain: string): void {
+  if (!ALLOWED_CANVAS_DOMAINS.test(domain) || domain.includes(":")) {
+    throw new Error("Enter the hostname of your school’s Canvas site, without a path or port.");
   }
 }
 
@@ -56,6 +35,8 @@ export async function fetchAllPages<T>(
   domain: string,
   url: string
 ): Promise<T[]> {
+  validateCanvasDomain(domain);
+  const origin = `https://${domain.toLowerCase()}`;
   const all: T[] = [];
   let nextUrl = url;
   let pageCount = 0;
@@ -63,26 +44,26 @@ export async function fetchAllPages<T>(
 
   while (nextUrl && pageCount < MAX_PAGES) {
     pageCount++;
-    const response = await fetch(nextUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(15_000),
-    });
+    if (new URL(nextUrl).origin !== origin) throw new Error("Unsafe Canvas pagination URL");
+    const response = await canvasRequest(nextUrl, token);
 
     if (!response.ok) {
       if (response.status === 401) {
         throw new CanvasAuthError(`Canvas returned 401 — token expired or revoked`);
       }
+      if (response.status === 403) throw new CanvasPermissionError("Canvas did not allow access to this coursework.");
       throw new Error(`Canvas API returned HTTP ${response.status}: ${response.statusText}`);
     }
 
     const data: T[] = await response.json();
+    if (!Array.isArray(data)) throw new Error("Unexpected Canvas response");
     all.push(...data);
 
     const linkHeader = response.headers.get("Link");
     // Host of the page we JUST fetched, captured before clearing nextUrl.
     // (This used to read nextUrl after clearing it, so any Link header
     // threw "Invalid URL" and killed every sync.)
-    const expectedHost = new URL(nextUrl).host;
+    const expectedOrigin = origin;
     nextUrl = "";
     if (linkHeader) {
       // The "next" URL carries our Bearer token on the NEXT request, so it
@@ -92,7 +73,7 @@ export async function fetchAllPages<T>(
         const match = link.match(/<([^>]+)>;\s*rel="next"/);
         if (match) {
           try {
-            if (new URL(match[1]).host === expectedHost) nextUrl = match[1];
+            if (new URL(match[1]).origin === expectedOrigin) nextUrl = match[1];
           } catch { /* not a URL — stop paging */ }
           break;
         }
@@ -100,6 +81,7 @@ export async function fetchAllPages<T>(
     }
   }
 
+  if (nextUrl) throw new Error("Canvas returned too many pages. Sync was not applied.");
   return all;
 }
 
@@ -180,12 +162,8 @@ const PLANNABLE_SYNCED_TYPES = new Set(["assignment", "quiz", "discussion_topic"
 /**
  * Map one planner item to an assignment row, or null for types we do not
  * track (planner notes, wiki pages, calendar events, announcements).
- * Graded quizzes and discussions carry their real assignment id at
- * plannable.assignment_id. Use it so the row key stays in the assignment id
- * space. Ungraded ones have assignment_id null and fall back to plannable_id.
- * ponytail: quiz and discussion ids live in different tables than assignment
- * ids, so a same number collision is possible in theory; the full fix is a
- * type column in the schema, not worth it today.
+ * Assignment-backed work keeps its Canvas assignment ID. Other quizzes use
+ * negative even IDs; discussions use negative odd IDs, avoiding collisions.
  */
 export function plannerItemToAssignment(item: unknown, domain: string): CanvasAssignment | null {
   if (typeof item !== "object" || item === null) return null;
@@ -197,10 +175,20 @@ export function plannerItemToAssignment(item: unknown, domain: string): CanvasAs
   // Some Canvas installs return a path-only html_url ("/courses/1/..."),
   // which would resolve against the CourseCue origin and 404. Make it absolute.
   const rawUrl = typeof record.html_url === "string" ? record.html_url : null;
-  const html_url = rawUrl?.startsWith("/") ? `https://${domain}${rawUrl}` : rawUrl;
+  let html_url: string | null = null;
+  try {
+    const url = new URL(rawUrl ?? "", `https://${domain}`);
+    if (rawUrl && url.origin === `https://${domain}` && !url.username && !url.password) html_url = url.href;
+  } catch { /* Unusable external URLs never become links. */ }
+  const itemId = Number(plannable?.assignment_id ?? record.plannable_id);
+  const courseId = Number(record.course_id);
+  if (!Number.isSafeInteger(itemId) || itemId <= 0 || !Number.isSafeInteger(courseId) || courseId <= 0) return null;
+  const nativeAssignment = record.plannable_type === "assignment" || plannable?.assignment_id != null;
+  const canvasId = nativeAssignment ? itemId : -(itemId * 2 + (record.plannable_type === "quiz" ? 0 : 1));
+  if (!Number.isSafeInteger(canvasId)) return null;
   return {
-    canvas_assignment_id: Number(plannable?.assignment_id ?? record.plannable_id),
-    canvas_course_id: Number(record.course_id),
+    canvas_assignment_id: canvasId,
+    canvas_course_id: courseId,
     title: String(plannable?.title ?? ""),
     due_at: typeof plannable?.due_at === "string"
       ? plannable.due_at
@@ -222,7 +210,8 @@ export function plannerItemToAssignment(item: unknown, domain: string): CanvasAs
 
 export async function getCanvasAssignments(
   token: string,
-  domain: string
+  domain: string,
+  courses: CanvasCourse[] = [],
 ): Promise<CanvasAssignment[]> {
   await validateCanvasDomain(domain);
 
@@ -238,9 +227,31 @@ export async function getCanvasAssignments(
   const assignmentsUrl = `https://${domain}/api/v1/planner/items?${params}`;
   const items = await fetchAllPages<unknown>(token, domain, assignmentsUrl);
 
-  return items
+  const assignments = items
     .map((item) => plannerItemToAssignment(item, domain))
     .filter((a): a is CanvasAssignment => a !== null);
+  // The date-based planner omits work without a deadline. Fetch it separately
+  // from each active course, including per-student submission status.
+  for (let offset = 0; offset < courses.length; offset += 5) {
+    const batches = await Promise.all(courses.slice(offset, offset + 5).map(async course => {
+      let undated: Record<string, unknown>[];
+      try {
+        undated = await fetchAllPages<Record<string, unknown>>(token, domain,
+          `https://${domain}/api/v1/courses/${course.id}/assignments?bucket=undated&include[]=submission&per_page=100`);
+      } catch (error) {
+        // A listed course can forbid its assignments endpoint (unpublished or
+        // restricted course). Keep accessible planner work; never hide other failures.
+        if (error instanceof CanvasPermissionError) return [];
+        throw error;
+      }
+      return undated.filter(item => item.published !== false).map(item => plannerItemToAssignment({
+        course_id: course.id, plannable_type: "assignment", plannable_id: item.id,
+        html_url: item.html_url, plannable: { ...item, title: item.name }, submissions: item.submission,
+      }, domain)).filter((item): item is CanvasAssignment => item !== null);
+    }));
+    assignments.push(...batches.flat());
+  }
+  return [...new Map(assignments.map(item => [item.canvas_assignment_id, item])).values()];
 }
 
 export async function testCanvasConnection(
@@ -250,12 +261,8 @@ export async function testCanvasConnection(
   try {
     await validateCanvasDomain(domain);
 
-    const response = await fetch(
-      `https://${domain}/api/v1/courses?per_page=50&enrollment_state=active&enrollment_type=student`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(15_000),
-      }
+    const response = await canvasRequest(
+      `https://${domain}/api/v1/courses?per_page=50&enrollment_state=active&enrollment_type=student`, token
     );
 
     if (!response.ok) {
