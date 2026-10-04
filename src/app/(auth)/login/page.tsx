@@ -74,13 +74,15 @@ export default function LoginPage() {
         const {
           data: { user: signedInUser },
         } = await supabase.auth.getUser();
-        const { data: profile } = signedInUser
+        const { data: profile, error: profileError } = signedInUser
           ? await supabase
               .from("profiles")
               .select("onboarding_complete, canvas_token")
               .eq("id", signedInUser.id)
-              .single()
-          : { data: null };
+              .maybeSingle()
+          : { data: null, error: null };
+
+        if (profileError) { setError("Signed in, but your profile could not load. Please try again."); return; }
 
         if (profile?.onboarding_complete && profile?.canvas_token) {
           router.push("/dashboard");

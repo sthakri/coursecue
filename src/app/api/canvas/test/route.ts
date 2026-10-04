@@ -33,7 +33,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const raw: unknown = await req.json();
+  let raw: unknown;
+  try { raw = await req.json(); } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const parsed = canvasTestSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ error: "Enter a valid Canvas domain and access token, then try again." }, { status: 422 });

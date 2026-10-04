@@ -1,3 +1,4 @@
+import { readAllPages } from "@/lib/read-all-pages";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { analyzeProductiveWindows, decayedScore, isActiveSlot } from "@/lib/ml";
@@ -32,18 +33,18 @@ export default async function InsightsPage() {
   const [
     { data: pwRows },
     { data: profile },
-    { data: nudgeEvents },
-    { data: allAssignments },
+    nudgeEvents,
+    allAssignments,
     { data: courses },
   ] = await Promise.all([
-    supabase.from("productive_windows").select("hour_of_day, day_of_week, score, updated_at").eq("user_id", userId),
-    supabase.from("profiles").select("timezone").eq("id", userId).single(),
+    supabase.from("productive_windows").select("hour_of_day, day_of_week, score, updated_at").eq("user_id", userId).throwOnError(),
+    supabase.from("profiles").select("timezone").eq("id", userId).single().throwOnError(),
     // nudge_events = append-only send log (one row per delivered nudge).
     // NOT nudge_logs — that's a dedup/claim table whose rows merge re-sends
     // and cascade-delete on assignment completion, so it can't count sends.
-    supabase.from("nudge_events").select("nudge_type").eq("user_id", userId).gte("sent_at", thirtyDaysAgo),
-    supabase.from("assignments").select("id, title, due_at, is_completed, course_id, points_possible").eq("user_id", userId).is("dismissed_at", null),
-    supabase.from("courses").select("id, name, color").eq("user_id", userId),
+    readAllPages((from, to) => supabase.from("nudge_events").select("nudge_type").eq("user_id", userId).gte("sent_at", thirtyDaysAgo).order("id").range(from, to)),
+    readAllPages((from, to) => supabase.from("assignments").select("id, title, due_at, is_completed, course_id, points_possible").eq("user_id", userId).is("dismissed_at", null).order("id").range(from, to)),
+    supabase.from("courses").select("id, name, color").eq("user_id", userId).throwOnError(),
   ]);
 
   const userTz = profile?.timezone ?? getDefaultTimezone();

@@ -37,7 +37,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const raw: unknown = await req.json();
+  let raw: unknown;
+  try { raw = await req.json(); } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const result = encryptBodySchema.safeParse(raw);
   if (!result.success) {
     return NextResponse.json({ error: "Enter your Canvas access token and try again." }, { status: 422 });

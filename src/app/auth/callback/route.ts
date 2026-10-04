@@ -25,7 +25,10 @@ export async function GET(req: NextRequest) {
   // Allow a custom `next` param for post-auth redirects; default to onboarding.
   // Same-origin paths only — a raw passthrough of `next` is an open redirect.
   let next = searchParams.get("next") ?? "/onboarding";
-  if (!next.startsWith("/") || next.startsWith("//")) next = "/onboarding";
+  try {
+    const destination = new URL(next, req.url);
+    if (!next.startsWith("/") || destination.origin !== req.nextUrl.origin || destination.username || destination.password) next = "/onboarding";
+  } catch { next = "/onboarding"; }
 
   if (code) {
     const supabase = await createClient();

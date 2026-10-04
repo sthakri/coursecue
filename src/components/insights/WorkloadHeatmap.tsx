@@ -72,7 +72,7 @@ export default function WorkloadHeatmap({ data, userTz }: Props) {
     // Calendar math from Monday's LOCAL date in UTC midnight space — adding
     // 86_400_000 ms to a Date can duplicate a local date on the 25h DST
     // fall-back day (duplicate heatmap cell, double-counted stats).
-    const mondayStr = getLocalDate(new Date(now.getTime() + dowOff * 86_400_000), userTz);
+    const mondayStr = new Date(Date.parse(`${todayStr}T12:00:00Z`) + dowOff * 86_400_000).toISOString().slice(0, 10);
     const [my, mm, md] = mondayStr.split("-").map(Number);
 
     const days: DayEntry[] = Array.from({ length: 42 }, (_, i) => {

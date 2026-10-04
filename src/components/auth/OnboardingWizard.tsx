@@ -33,7 +33,8 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
 
   async function handleSignOut() {
     await unsubscribePushDevice();
-    await createClient().auth.signOut({ scope: "global" });
+    const { error } = await createClient().auth.signOut({ scope: "local" });
+    if (error) { toast.error("Could not sign out. Please try again."); return; }
     router.push("/");
   }
 
@@ -89,13 +90,19 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
   }
 
   async function handleGoToDashboard() {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("profiles").upsert({ id: user.id, onboarding_complete: true });
-      fetch("/api/canvas/sync?source=manual", { method: "POST" });
-    }
-    router.push("/dashboard");
+    if (loading) return;
+    setLoading(true);
+    setError("");
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setError("Your session expired. Sign in again to finish setup."); return; }
+      const { data, error } = await supabase.from("profiles")
+        .update({ onboarding_complete: true }).eq("id", user.id).select("id");
+      if (error || !data?.length) { setError("Could not finish setup. Please try again."); return; }
+      router.push("/dashboard");
+    } catch { setError("Could not finish setup. Check your connection and try again."); }
+    finally { setLoading(false); }
   }
 
   const inputCls = "w-full rounded-sm bg-background border border-input text-foreground placeholder:text-muted-foreground text-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-ring min-h-11";
@@ -190,14 +197,15 @@ export default function OnboardingWizard({ userEmail }: { userEmail?: string }) 
           <div className="text-4xl mb-2">🎉</div>
           <div>
             <h1 className="text-foreground font-bold text-2xl">You&apos;re all set!</h1>
-            <p className="text-muted-foreground text-sm mt-1">Your Canvas assignments are syncing in the background.</p>
+            <p className="text-muted-foreground text-sm mt-1">Your Canvas assignments will sync when you open the dashboard.</p>
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={() => setStep(3)} className="flex-1 rounded-sm border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-subtle text-sm font-medium py-3 transition-colors min-h-11">← Back</button>
-            <button type="button" onClick={handleGoToDashboard} className="flex-[2] rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 transition-colors shadow-none min-h-11">Go to Dashboard →</button>
+            <button type="button" disabled={loading} onClick={handleGoToDashboard} className="flex-[2] rounded-sm bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 transition-colors shadow-none min-h-11">{loading ? "Finishing setup…" : "Go to Dashboard →"}</button>
           </div>
         </div>
       )}
+      {step !== 1 && error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
     </div>
   );
 }

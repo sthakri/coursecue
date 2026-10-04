@@ -30,26 +30,31 @@ export async function GET() {
     );
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("timezone, stress_threshold")
     .eq("id", user.id)
     .single();
+
+  if (profileError) return NextResponse.json({ error: "Could not load preferences" }, { status: 503 });
 
   const userTz = profile?.timezone ?? getDefaultTimezone();
 
   const now = new Date();
   const fourteenDaysLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
-  const { data: assignments } = await supabase
+  const { data: assignments, error: assignmentsError } = await supabase
     .from("assignments")
     .select("due_at")
     .eq("user_id", user.id)
     .eq("is_completed", false)
+    .is("dismissed_at", null)
     .not("due_at", "is", null)
     .gte("due_at", now.toISOString())
     .lte("due_at", fourteenDaysLater.toISOString())
     .order("due_at", { ascending: true });
+
+  if (assignmentsError) return NextResponse.json({ error: "Could not load workload" }, { status: 503 });
 
   const totalUpcoming = assignments?.length ?? 0;
   const userThreshold = profile?.stress_threshold ?? 5;

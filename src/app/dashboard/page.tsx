@@ -27,7 +27,7 @@ export default async function DashboardPage() {
       .eq("user_id", userId)
       .eq("is_completed", false)
       .is("dismissed_at", null).order("id").range(from, to)),
-    supabase.from("profiles").select("canvas_token, canvas_domain, timezone, last_synced_at").eq("id", userId).single(),
+    supabase.from("profiles").select("canvas_token, canvas_domain, timezone, last_synced_at").eq("id", userId).single().throwOnError(),
   ]);
 
   const userTz = profile?.timezone ?? getDefaultTimezone();

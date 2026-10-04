@@ -48,7 +48,7 @@ export async function POST() {
   const hourOfDay = getLocalHour(now, profile.timezone);
   const dayOfWeek = getLocalDay(now, profile.timezone);
 
-  const { data: pwRow } = await supabase
+  const { data: pwRow, error: readError } = await supabase
     .from("productive_windows")
     .select("score")
     .eq("user_id", userId)
@@ -56,9 +56,11 @@ export async function POST() {
     .eq("day_of_week", dayOfWeek)
     .maybeSingle();
 
+  if (readError) return NextResponse.json({ error: "Could not read activity" }, { status: 503 });
+
   const newScore = Math.min(((pwRow?.score as number) ?? 0) + 0.01, 1);
 
-  await supabase
+  const { error: writeError } = await supabase
     .from("productive_windows")
     .upsert(
       {
@@ -71,5 +73,6 @@ export async function POST() {
       { onConflict: "user_id,hour_of_day,day_of_week" }
     );
 
+  if (writeError) return NextResponse.json({ error: "Could not save activity" }, { status: 503 });
   return NextResponse.json({ success: true, score: newScore });
 }
