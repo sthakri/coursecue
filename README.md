@@ -136,9 +136,8 @@ Canvas sync is scheduled every 30 minutes (`5,35 * * * *`, UTC); the nudge engin
 
 Before publishing a change, run tests, lint, type checking, and a production build with valid configuration. Tests use mocked integrations; a successful build does not prove live credentials, database migration state, scheduled runs, or device delivery. Verify those separately when changing the affected integration.
 
-## Project documentation
+## Contributing
 
-- [Architecture](docs/ARCHITECTURE.md) — data flow and boundaries
-- [Deployment](docs/DEPLOYMENT.md) — Vercel, Trigger.dev, and database setup
-- [Release checks](docs/RELEASE_CHECKS.md) — verification and device checks
-- [Contributing](CONTRIBUTING.md) — conventions and review requirements
+Suggestions and bug reports are welcome through [GitHub Issues](https://github.com/sthakri/coursecue/issues). For a substantial feature, describe the student problem and proposed scope first. Keep pull requests focused, explain the resulting behaviour and verification, and identify any database changes or separate Trigger.dev deployment.
+
+Follow the existing feature folders and strict TypeScript conventions. Use validated environment variables, the appropriate Supabase client, input validation, and API rate limits. Keep scheduled work in `src/trigger/`, AI requests in `src/lib/nim.ts`, charts in D3, and shared state in Zustand. Style components with semantic tokens from `src/app/globals.css` and keep shared UI primitives unchanged. Add regression coverage for behaviour changes and run the checks above before submitting.

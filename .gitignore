@@ -29,15 +29,11 @@ next-env.d.ts
 /public/worker-*.js
 /public/workbox-*.js
 
-# Local agent instructions and personal notes; publish maintained project docs
+# Local agent instructions and maintenance notes; public documentation is in README.md
 /AGENTS.md
 /CLAUDE.md
-/docs/*
-!/docs/GETTING_STARTED.md
-!/docs/DEPLOYMENT.md
-!/docs/ARCHITECTURE.md
-!/docs/UI_PATTERNS.md
-!/docs/RELEASE_CHECKS.md
+/docs/
+/CONTRIBUTING.md
 /ui-registry.md
 /DEPLOYMENT.md
 /ARCHITECTURE.md
