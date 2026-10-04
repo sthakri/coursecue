@@ -83,7 +83,10 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     const statusCode = (err as { statusCode?: number })?.statusCode;
     if (statusCode === 410 || statusCode === 404) {
-      await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+      // A device can change accounts or keys while the push request is pending.
+      await serviceClient.from("push_subscriptions").delete()
+        .eq("user_id", userId).eq("endpoint", sub.endpoint)
+        .eq("p256dh", sub.p256dh).eq("auth", sub.auth);
       return NextResponse.json(
         { error: "Subscription expired — re-enable notifications", expired: true },
         { status: 410 }

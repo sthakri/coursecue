@@ -117,7 +117,8 @@ export async function GET(req: NextRequest) {
       } catch (err: unknown) {
         const statusCode = (err as { statusCode?: number })?.statusCode
         if (statusCode === 410 || statusCode === 404) {
-          await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+          await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+            .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
           results.push(`✗ stale (${statusCode}), deleted`)
         } else {
           results.push(`✗ error: ${String(err)}`)
@@ -189,7 +190,8 @@ export async function GET(req: NextRequest) {
       } catch (err: unknown) {
         const statusCode = (err as { statusCode?: number })?.statusCode
         if (statusCode === 410 || statusCode === 404) {
-          await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+          await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+            .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
           results.push(`✗ stale (${statusCode}), deleted`)
         } else {
           results.push(`✗ error: ${String(err)}`)
@@ -309,7 +311,8 @@ export async function GET(req: NextRequest) {
     } catch (err: unknown) {
       const statusCode = (err as { statusCode?: number })?.statusCode
       if (statusCode === 410 || statusCode === 404) {
-        await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+        await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+          .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
         results.push(`✗ stale (${statusCode}), deleted`)
       } else {
         results.push(`✗ error: ${String(err)}`)

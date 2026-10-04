@@ -14,20 +14,23 @@ import { notifyTokenExpired } from "@/trigger/canvas-sync";
 const NOW = "2026-10-03T12:00:00.000Z";
 const profile = { id: "user", timezone: "UTC", quiet_hours_start: null, quiet_hours_end: null, nudge_paused_until: null, nudge_frequency: "normal" };
 const assignment = { id: "assignment", title: "Homework", due_at: "2026-10-03T13:00:00.000Z" };
-type Scenario = { missingProfile?: boolean; profileError?: boolean; historyError?: boolean; claimError?: boolean; claimLost?: boolean; paused?: boolean; productive?: boolean; quiet?: boolean };
+type Scenario = { missingProfile?: boolean; profileError?: boolean; historyError?: boolean; claimError?: boolean; claimLost?: boolean; paused?: boolean; productive?: boolean; quiet?: boolean; overdue?: boolean };
+const device = { user_id: "user", endpoint: "https://fcm.googleapis.com/device", p256dh: "key", auth: "auth" };
 
 // Exercise the actual scheduled run, mocking only integration boundaries. Queries
 // retain operation/filter state so failed reads differ from successful empty reads.
-function arrange(scenario: Scenario = {}) {
+function arrange(scenario: Scenario = {}, subscriptions = [{ ...device }]) {
   mocks.from.mockImplementation((table: string) => {
     let operation = "read";
     let throwing = false;
     let overdue = false;
     let single = false;
+    const filters: Array<[string, unknown]> = [];
     const builder: Record<string, unknown> = {};
     for (const method of ["select", "eq", "in", "is", "gt", "gte", "lte", "order", "limit", "range"]) {
       builder[method] = () => builder;
     }
+    builder.eq = (key: string, value: unknown) => { filters.push([key, value]); return builder; };
     builder.lt = (column: string) => { if (column === "due_at") overdue = true; return builder; };
     builder.throwOnError = () => { throwing = true; return builder; };
     builder.single = () => { single = true; return builder; };
@@ -39,9 +42,16 @@ function arrange(scenario: Scenario = {}) {
         data = scenario.missingProfile ? [] : [{ ...profile, quiet_hours_start: scenario.quiet ? 11 : null, quiet_hours_end: scenario.quiet ? 13 : null, nudge_paused_until: scenario.paused ? "2026-10-04T12:00:00Z" : null }];
         if (scenario.profileError) error = new Error("Preference read failed");
       }
-      if (table === "push_subscriptions") data = [{ user_id: "user", endpoint: "https://fcm.googleapis.com/device", p256dh: "key", auth: "auth" }];
+      if (table === "push_subscriptions") {
+        if (operation === "delete") {
+          const remaining = subscriptions.filter(row => !filters.every(([key, value]) => row[key as keyof typeof row] === value));
+          subscriptions.splice(0, subscriptions.length, ...remaining);
+        }
+        data = [...subscriptions];
+      }
       if (table === "productive_windows" && scenario.productive) data = [{ user_id: "user", day_of_week: 6, hour_of_day: 12, score: 0.1, updated_at: NOW }];
-      if (table === "assignments" && !overdue) data = [assignment];
+      if (table === "assignments" && !overdue && !scenario.overdue) data = [assignment];
+      if (table === "assignments" && overdue && scenario.overdue) data = [{ ...assignment, due_at: "2026-10-03T11:00:00.000Z" }];
       if (table === "nudge_logs" && operation === "read" && scenario.historyError) error = new Error("History read failed");
       if (table === "nudge_logs" && operation === "upsert") {
         data = scenario.claimLost ? [] : [{ assignment_id: assignment.id }];
@@ -125,5 +135,38 @@ describe("scheduled nudge safety", () => {
     await run();
     expect(mocks.send).toHaveBeenCalledOnce();
     expect(mocks.send).toHaveBeenCalledWith(expect.any(Object), expect.stringContaining("Homework"), expect.any(String), 3600, "assignment");
+  });
+});
+
+describe("expired scheduled subscription cleanup", () => {
+  const senders = [
+    { name: "Canvas token", scenario: {}, run: () => notifyTokenExpired({ from: mocks.from } as unknown as Parameters<typeof notifyTokenExpired>[0], "user") },
+    { name: "deadline", scenario: {}, run },
+    { name: "productive window", scenario: { productive: true }, run },
+    { name: "overdue", scenario: { overdue: true }, run },
+  ];
+
+  it.each(senders)("removes an unchanged expired device for $name", async sender => {
+    const subscriptions = [{ ...device }];
+    arrange(sender.scenario, subscriptions);
+    mocks.send.mockRejectedValue({ statusCode: 410 });
+    await sender.run();
+    expect(mocks.send).toHaveBeenCalled();
+    expect(subscriptions).toEqual([]);
+  });
+
+  it.each(senders)("preserves a device changed during delivery for $name", async sender => {
+    for (const change of [{ user_id: "other-user" }, { auth: "new-auth" }, { p256dh: "new-key" }]) {
+      const subscriptions = [{ ...device }];
+      const replacement = { ...device, ...change };
+      arrange(sender.scenario, subscriptions);
+      mocks.send.mockImplementation(async () => {
+        subscriptions.splice(0, subscriptions.length, replacement);
+        throw { statusCode: 410 };
+      });
+      await sender.run();
+      expect(mocks.send).toHaveBeenCalled();
+      expect(subscriptions).toEqual([replacement]);
+    }
   });
 });

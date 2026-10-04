@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidElement, type ReactNode } from "react";
 import PushNotificationButton from "@/components/push/PushNotificationButton";
+import TestNotifButton from "@/components/push/TestNotifButton";
 import { clearPushSyncMarkers } from "@/lib/push";
+import { toast } from "sonner";
 
 // A small hook harness keeps these browser API regressions runnable in Node.
 // React still creates real elements; only lifecycle scheduling is controlled.
@@ -39,7 +41,7 @@ vi.mock("react", async (importOriginal) => {
 vi.mock("@/components/ui/button", () => ({ Button: "button" }));
 vi.mock("@/components/ui/skeleton", () => ({ Skeleton: "span" }));
 vi.mock("lucide-react", () => ({ CheckCircle: "svg", Bell: "svg", Loader2: "svg" }));
-vi.mock("sonner", () => ({ toast: { error: vi.fn(), warning: vi.fn(), success: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), warning: vi.fn(), success: vi.fn(), info: vi.fn() } }));
 vi.mock("@/lib/env", () => ({
   env: { NEXT_PUBLIC_VAPID_PUBLIC_KEY: Buffer.from([4, ...Array<number>(64).fill(1)]).toString("base64url") },
 }));
@@ -220,5 +222,60 @@ describe("push notification button recovery", () => {
     resolveCheck(null);
     await checking;
     expect(textContent(render())).toContain("Nudges enabled");
+  });
+});
+
+function testButtons() {
+  hooks.cursor = 0;
+  const element = TestNotifButton();
+  return element.props.children as Array<{ props: { children: string; disabled: boolean; "aria-busy"?: boolean; onClick: () => Promise<void> } }>;
+}
+
+describe("notification test buttons", () => {
+  it.each([false, true])("shows progress only for the selected test and blocks overlapping clicks: silent=%s", async silent => {
+    const { registration } = setupBrowser("granted");
+    registration.pushManager.getSubscription.mockResolvedValue(subscription());
+    let finish!: (response: Response) => void;
+    vi.mocked(fetch).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const selected = silent ? 1 : 0;
+    const other = silent ? 0 : 1;
+    const initial = testButtons();
+    const pending = initial[selected].props.onClick();
+    await settle();
+
+    const busy = testButtons();
+    expect(busy[selected].props.children).toBe("Sending…");
+    expect(busy[other].props.children).toBe(initial[other].props.children);
+    expect(busy.map(button => button.props.disabled)).toEqual([true, true]);
+    expect(busy.map(button => button.props["aria-busy"])).toEqual(silent ? [false, true] : [true, false]);
+    await initial[other].props.onClick();
+    await initial[selected].props.onClick();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [path, options] = vi.mocked(fetch).mock.calls[0];
+    expect(path).toBe("/api/push/test");
+    expect(JSON.parse(options!.body as string)).toEqual({ endpoint: subscription().endpoint, silent });
+
+    finish(Response.json({ success: true }));
+    await pending;
+    expect(testButtons().map(button => button.props.children)).toEqual(["Send test notification", "Send silent test"]);
+    expect(testButtons().map(button => button.props.disabled)).toEqual([false, false]);
+    expect(toast.success).toHaveBeenCalledTimes(1);
+    const next = testButtons()[other].props.onClick();
+    await settle();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    finish(Response.json({ success: true }));
+    await next;
+  });
+
+  it("restores both actions after a failed request and allows retrying", async () => {
+    const { registration } = setupBrowser("granted");
+    registration.pushManager.getSubscription.mockResolvedValue(subscription());
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ error: "Try again later" }, { status: 502 }));
+    await testButtons()[1].props.onClick();
+    expect(toast.error).toHaveBeenCalledWith("Try again later");
+    expect(testButtons().map(button => button.props.disabled)).toEqual([false, false]);
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ success: true }));
+    await testButtons()[0].props.onClick();
+    expect(toast.success).toHaveBeenCalledTimes(1);
   });
 });

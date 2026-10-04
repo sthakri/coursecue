@@ -140,7 +140,8 @@ export async function notifyTokenExpired(
       const statusCode = (err as { statusCode?: number })?.statusCode
       if (statusCode === 410 || statusCode === 404) {
         console.log(`[canvas-sync] uid=${userId} stale sub (${statusCode}), deleting`)
-        await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+        await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+          .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
       } else {
         console.error(`[canvas-sync] uid=${userId} token_expired push failed:`, err)
       }

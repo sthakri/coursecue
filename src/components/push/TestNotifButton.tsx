@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { getDeviceSubscription, pushErrorMessage, pushRequest, unsubscribePushDevice, withPushTimeout } from "@/lib/push";
 
 export default function TestNotifButton() {
-  const [sending, setSending] = useState(false);
+  const [sending, setSending] = useState<boolean | null>(null);
   const inFlight = useRef(false);
 
   async function handleClick(silent: boolean) {
@@ -15,7 +15,7 @@ export default function TestNotifButton() {
       return;
     }
     inFlight.current = true;
-    setSending(true);
+    setSending(silent);
     try {
       const subscription = await getDeviceSubscription();
       if (!subscription) { toast.error("No push subscription found — enable nudges on this device."); return; }
@@ -31,15 +31,15 @@ export default function TestNotifButton() {
         toast.error(data.error ?? "Test notification failed");
       }
     } catch (error) { toast.error(pushErrorMessage(error)); }
-    finally { inFlight.current = false; setSending(false); }
+    finally { inFlight.current = false; setSending(null); }
   }
 
   return (
-    <div className="flex flex-wrap gap-2" aria-busy={sending}>
+    <div className="flex flex-wrap gap-2" aria-busy={sending !== null}>
       {[false, true].map(silent => (
-        <button key={String(silent)} type="button" disabled={sending} onClick={() => handleClick(silent)}
+        <button key={String(silent)} type="button" disabled={sending !== null} aria-busy={sending === silent} onClick={() => handleClick(silent)}
           className="min-h-11 rounded-sm border border-border bg-card px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-input hover:text-foreground disabled:opacity-50">
-          {sending ? "Sending…" : silent ? "Send silent test" : "Send test notification"}
+          {sending === silent ? "Sending…" : silent ? "Send silent test" : "Send test notification"}
         </button>
       ))}
     </div>

@@ -114,6 +114,25 @@ describe("test notification subscription lookup", () => {
     expect(boundary.sendPush).not.toHaveBeenCalled();
     expect(rows).toEqual([]);
   });
+
+  it("removes an expired subscription that has not changed", async () => {
+    rows = [{ ...device, user_id: "current-user" }];
+    boundary.sendPush.mockRejectedValue({ statusCode: 410 });
+    const response = await testPush(request({ endpoint: device.endpoint }));
+    expect(response.status).toBe(410);
+    expect(rows).toEqual([]);
+  });
+
+  it.each(["account", "keys"])("preserves a subscription whose %s changed during an expired test", async change => {
+    rows = [{ ...device, user_id: "current-user" }];
+    const replacement = { ...device, user_id: change === "account" ? "other-user" : "current-user",
+      auth: change === "keys" ? "rotated-key" : device.auth };
+    boundary.sendPush.mockRejectedValue({ statusCode: 410 });
+    beforeWrite = () => { rows = [replacement]; };
+    const response = await testPush(request({ endpoint: device.endpoint }));
+    expect(response.status).toBe(410);
+    expect(rows).toEqual([replacement]);
+  });
 });
 
 describe("push request boundaries", () => {

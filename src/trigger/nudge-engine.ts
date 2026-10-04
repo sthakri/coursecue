@@ -222,7 +222,8 @@ export const nudgeEngine = schedules.task({
             if (statusCode === 410 || statusCode === 404) {
               // Subscription expired — clean up
               console.log(`[nudge-engine] Section A uid=${userId} stale sub (${statusCode}), deleting`)
-              await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+              await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+                .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
             } else {
               console.error(`[nudge-engine] Section A uid=${userId} push failed:`, err)
             }
@@ -372,7 +373,8 @@ export const nudgeEngine = schedules.task({
               const statusCode = (err as { statusCode?: number })?.statusCode
               if (statusCode === 410 || statusCode === 404) {
                 console.log(`[nudge-engine] Section B uid=${userId} stale sub (${statusCode}), deleting`)
-                await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+                await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+                  .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
               } else {
                 console.error(`[nudge-engine] Section B uid=${userId} push failed:`, err)
               }
@@ -500,7 +502,8 @@ export const nudgeEngine = schedules.task({
               const statusCode = (err as { statusCode?: number })?.statusCode
               if (statusCode === 410 || statusCode === 404) {
                 console.log(`[nudge-engine] Section D uid=${userId} stale sub (${statusCode}), deleting`)
-                await serviceClient.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+                await serviceClient.from("push_subscriptions").delete().eq("user_id", userId)
+                  .eq("endpoint", sub.endpoint).eq("p256dh", sub.p256dh).eq("auth", sub.auth)
               } else {
                 console.error(`[nudge-engine] Section D uid=${userId} push failed:`, err)
               }
