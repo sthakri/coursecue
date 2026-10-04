@@ -15,6 +15,14 @@ import {
 import { nudgeTestQuerySchema } from "@/lib/validations"
 import type { Database } from "@/database.types"
 import webpush from "web-push"
+import { Ratelimit } from "@upstash/ratelimit"
+import { Redis } from "@upstash/redis"
+
+const ratelimit = new Ratelimit({
+  redis: new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }),
+  limiter: Ratelimit.slidingWindow(5, "1 m"),
+  prefix: "rl:nudge:test",
+})
 
 export async function GET(req: NextRequest) {
   // Dev-only tool. Fail CLOSED: any non-development environment 404s, so an
@@ -31,6 +39,9 @@ export async function GET(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const { success } = await ratelimit.limit(user.id)
+  if (!success) return NextResponse.json({ error: "Too many test requests" }, { status: 429 })
 
   const parsed = nudgeTestQuerySchema.safeParse({
     userId: req.nextUrl.searchParams.get("userId"),

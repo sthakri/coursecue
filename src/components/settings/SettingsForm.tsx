@@ -39,9 +39,9 @@ function formatHour(hour: number): string {
 }
 
 const FREQUENCIES = [
-  { value: "aggressive", label: "Aggressive", desc: "Nudge at every productive window" },
-  { value: "normal", label: "Normal", desc: "Max once per day during productive hours" },
-  { value: "minimal", label: "Minimal", desc: "Deadline reminders and overdue follow-ups for up to 3 days" },
+  { value: "aggressive", label: "Aggressive", desc: "During active windows, at most once every 4 hours" },
+  { value: "normal", label: "Normal", desc: "During active windows, at most once every 20 hours" },
+  { value: "minimal", label: "Minimal", desc: "Final deadline reminder (about 1 hour) and overdue follow-ups for up to 3 days" },
 ] as const;
 
 const PAUSE_DURATIONS = [
@@ -59,10 +59,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+function Toggle({ checked, onChange, label, disabled = false }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
   return (
     <label className="relative inline-flex items-center cursor-pointer shrink-0">
-      <input type="checkbox" role="switch" aria-label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+      <input type="checkbox" disabled={disabled} role="switch" aria-label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
       <div className="w-9 h-5 bg-input rounded-full peer peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-focus-visible:outline-offset-3 peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
     </label>
   );
@@ -132,9 +132,11 @@ export default function SettingsForm({
     formData.set("stress_threshold", String(threshold));
     formData.set("timezone", timezone);
     startTransition(async () => {
-      const result = await saveSettings(formData);
-      if (result.error) toast.error(result.error);
-      else toast.success("Settings saved");
+      try {
+        const result = await saveSettings(formData);
+        if (result.error) toast.error(result.error);
+        else toast.success("Settings saved");
+      } catch { toast.error("Could not save settings. Check your connection and try again."); }
     });
   }
 
@@ -142,14 +144,19 @@ export default function SettingsForm({
     const fd = new FormData();
     fd.set("hours", String(hours));
     startPauseTransition(async () => {
+      try {
       const result = await pauseNotifications(fd);
       if (result.error) {
         toast.error(result.error);
-        setPauseEnabled(false); // revert the toggle — the pause never persisted
+        setPauseEnabled(isPaused); // Restore the last saved state.
       } else {
         setPausedUntil(result.pausedUntil ?? null); // countdown derives from this
         if (hours === 0) toast.success("Notifications resumed");
         else toast.success(`Notifications paused for ${hours}h`);
+      }
+      } catch {
+        setPauseEnabled(isPaused);
+        toast.error("Could not change your pause. Check your connection and try again.");
       }
     });
   }
@@ -165,7 +172,7 @@ export default function SettingsForm({
 
   return (
     <div className="flex flex-col gap-5">
-      <form onSubmit={(event) => {
+      <form className="space-y-5" onSubmit={(event) => {
         event.preventDefault();
         handleSave(new FormData(event.currentTarget));
       }}>
@@ -292,7 +299,7 @@ export default function SettingsForm({
                 {pausedRemaining}m remaining
               </span>
             )}
-            <Toggle label="Pause notifications" checked={pauseEnabled} onChange={(enabled) => { setPauseEnabled(enabled); if (enabled) handlePause(activeDuration); else handlePause(0); }} />
+            <Toggle label="Pause notifications" disabled={isPausing} checked={pauseEnabled} onChange={(enabled) => { setPauseEnabled(enabled); if (enabled) handlePause(activeDuration); else handlePause(0); }} />
           </div>
         </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${pauseEnabled ? "max-h-20 opacity-100" : "max-h-0 opacity-0"}`}>

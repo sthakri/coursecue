@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "We couldn't identify this device. Enable notifications again and retry." }, { status: 422 });
   }
 
-  const { endpoint } = parsed.data;
+  const { endpoint, silent } = parsed.data;
 
   const serviceClient = createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    await sendPushNotification(subscription, "Push notifications are working!");
+    await sendPushNotification(subscription, silent ? "This is a silent test notification." : "This test uses your device’s notification settings.", "CourseCue test", 60, undefined, silent);
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const statusCode = (err as { statusCode?: number })?.statusCode;

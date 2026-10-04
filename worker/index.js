@@ -9,6 +9,7 @@ self.addEventListener('push', function(event) {
     self.registration.showNotification(data.title || 'CourseCue', {
       body: data.body || 'You have an assignment due soon',
       icon: '/icons/icon-192.png',
+      ...(data.silent === true ? { silent: true } : {}),
       data: { assignmentId: data.assignmentId },
     })
   )

@@ -1,3 +1,5 @@
+import { readAllPages } from "@/lib/read-all-pages"
+import { canNotify } from "@/lib/notification-preferences"
 import { queue, schedules } from "@trigger.dev/sdk"
 import { createServerClient } from "@supabase/ssr"
 import { env } from "@/lib/env"
@@ -18,17 +20,6 @@ import ws from "ws"
 import { filterDailyOverdueNudge, filterNeverNudgedOverdue, overdueReminderTtl, OVERDUE_REMINDER_WINDOW_MS } from "@/lib/overdue-dedup";
 import { isActiveSlot } from "@/lib/ml";
 export { filterDailyOverdueNudge, filterNeverNudgedOverdue };
-
-function isInQuietHours(
-  start: number | null,
-  end: number | null,
-  localHour: number,
-): boolean {
-  if (start === null || end === null) return false
-  if (start === end) return false // equal start/end = "off", not "quiet for one hour"
-  if (start < end) return localHour >= start && localHour < end
-  return localHour >= start || localHour < end
-}
 
 // Serial queue: the 15-min cron can otherwise overlap with a long-running
 // previous run (NIM timeouts are 30s each), and the claim-then-send dedup only
@@ -60,18 +51,16 @@ export const nudgeEngine = schedules.task({
     )
 
     // Fetch productive windows and push subscriptions in parallel.
-    const [windowsResult, subsResult] = await Promise.all([
-      serviceClient
-        .from("productive_windows")
-        .select("user_id, hour_of_day, day_of_week, score, updated_at")
-        .gt("score", 0),
-      serviceClient
-        .from("push_subscriptions")
-        .select("user_id, endpoint, p256dh, auth"),
+    const [allWindows, allSubs, userProfiles] = await Promise.all([
+      readAllPages((from, to) => serviceClient.from("productive_windows")
+        .select("user_id, hour_of_day, day_of_week, score, updated_at").gt("score", 0)
+        .order("user_id").order("day_of_week").order("hour_of_day").range(from, to)),
+      readAllPages((from, to) => serviceClient.from("push_subscriptions")
+        .select("user_id, endpoint, p256dh, auth").order("id").range(from, to)),
+      readAllPages((from, to) => serviceClient.from("profiles")
+        .select("id, timezone, quiet_hours_start, quiet_hours_end, nudge_frequency, nudge_paused_until")
+        .order("id").range(from, to)),
     ])
-
-    const allWindows = windowsResult.data ?? []
-    const allSubs = subsResult.data ?? []
     const subsByUser = new Map<string, typeof allSubs>()
     for (const s of allSubs) {
       const existing = subsByUser.get(s.user_id) ?? []
@@ -80,21 +69,11 @@ export const nudgeEngine = schedules.task({
     }
 
     console.log(`[nudge-engine] productive_windows rows: ${allWindows.length}, push_subscriptions rows: ${allSubs.length}`)
-    if (windowsResult.error) console.error("[nudge-engine] productive_windows query error:", windowsResult.error)
-    if (subsResult.error) console.error("[nudge-engine] push_subscriptions query error:", subsResult.error)
 
     // ── Section A: Productive Window Nudges ───────────────────────────────────
     // Fire only during the user's local productive day+hour, at most once per 20h.
 
     const uniqueUserIds = [...new Set(allWindows.map((w) => w.user_id))]
-    const allSubUserIds = allSubs.map((s) => s.user_id)
-    const profileUserIds = [...new Set([...uniqueUserIds, ...allSubUserIds])]
-
-    const { data: userProfiles } = await serviceClient
-      .from("profiles")
-      .select("id, timezone, quiet_hours_start, quiet_hours_end, nudge_frequency, nudge_paused_until")
-      .in("id", profileUserIds)
-
     const profileByUser = new Map(
       (userProfiles ?? []).map((p) => [p.id, p]),
     )
@@ -148,19 +127,7 @@ export const nudgeEngine = schedules.task({
           return
         }
 
-        // Quiet hours check
-        const localHour = getLocalHour(now, tzByUser.get(userId) ?? getDefaultTimezone())
-
-        if (isInQuietHours(pf.quiet_hours_start, pf.quiet_hours_end, localHour)) {
-          console.log(`[nudge-engine] Section A uid=${userId} in quiet hours — skipping`)
-          return
-        }
-
-        // Nudge pause check
-        if (pf.nudge_paused_until && new Date(pf.nudge_paused_until) > now) {
-          console.log(`[nudge-engine] Section A uid=${userId} nudges paused until ${pf.nudge_paused_until} — skipping`)
-          return
-        }
+        if (!canNotify(pf, new Date())) return
 
         // Frequency check - minimal skips productive window nudges entirely
         if (pf.nudge_frequency === "minimal") {
@@ -180,6 +147,7 @@ export const nudgeEngine = schedules.task({
           .gte("sent_at", dedupSince.toISOString())
           .order("sent_at", { ascending: false })
           .limit(1)
+          .throwOnError()
 
         if (recentLogs && recentLogs.length > 0) {
           console.log(`[nudge-engine] Section A uid=${userId} dedup hit — nudge already sent in last ${dedupWindowMs / 3_600_000}h`)
@@ -218,7 +186,6 @@ export const nudgeEngine = schedules.task({
           totalPendingCount: assignments.length,
           userTz,
         })
-        console.log(`[nudge-engine] Section A uid=${userId} nudge text: "${nudgeText}"`)
 
         // Claim before send: upsert refreshes sent_at (the 20h/4h dedup window
         // reads it). A plain insert would silently fail on the unique index the
@@ -246,9 +213,10 @@ export const nudgeEngine = schedules.task({
             keys: { p256dh: sub.p256dh, auth: sub.auth },
           }
           try {
-            await sendPushNotification(subscription, nudgeText, "Peak Focus Window ⚡")
+            if (!canNotify(pf, new Date())) break
+            await sendPushNotification(subscription, nudgeText, "Peak Focus Window ⚡", 60 * 60)
             delivered = true
-            console.log(`[nudge-engine] Section A uid=${userId} push sent to ${sub.endpoint.slice(0, 50)}… ✓`)
+            console.log(`[nudge-engine] Section A uid=${userId} push accepted by service`)
           } catch (err: unknown) {
             const statusCode = (err as { statusCode?: number })?.statusCode
             if (statusCode === 410 || statusCode === 404) {
@@ -296,24 +264,7 @@ export const nudgeEngine = schedules.task({
     const sectionBResults = await Promise.allSettled(
       [...subsByUser.entries()].map(async ([userId, subs]) => {
         const pf = profileByUser.get(userId)
-        const userTz = tzByUser.get(userId) ?? getDefaultTimezone()
-
-        // Quiet hours check (skip if profile is missing)
-        if (pf) {
-          const localHour = getLocalHour(now, userTz)
-
-          if (isInQuietHours(pf.quiet_hours_start, pf.quiet_hours_end, localHour)) {
-            console.log(`[nudge-engine] Section B uid=${userId} in quiet hours — skipping`)
-            return
-          }
-
-          if (pf.nudge_paused_until && new Date(pf.nudge_paused_until) > now) {
-            console.log(`[nudge-engine] Section B uid=${userId} nudges paused until ${pf.nudge_paused_until} — skipping`)
-            return
-          }
-        } else {
-          console.log(`[nudge-engine] Section B uid=${userId} no profile — allowing nudges (default behavior)`)
-        }
+        if (!canNotify(pf, new Date())) return
 
         // Fetch all incomplete assignments due within the widest threshold window.
         const { data: upcomingAssignments } = await serviceClient
@@ -337,6 +288,7 @@ export const nudgeEngine = schedules.task({
           .eq("user_id", userId)
           .in("assignment_id", assignmentIds)
           .in("nudge_type", ["12h", "6h", "1h"])
+          .throwOnError()
 
         const sentByAssignment = new Map<string, Set<DeadlineType>>()
         for (const l of sentLogs ?? []) {
@@ -364,22 +316,9 @@ export const nudgeEngine = schedules.task({
           // In minimal mode, only send 1h deadline nudges.
           if (pf?.nudge_frequency === "minimal" && threshold.type !== "1h") continue
 
-          const earliest = list[0] // query is ordered by due_at asc; bucket filter preserves order
-          const remainingMs = new Date(earliest.due_at!).getTime() - now.getTime()
-          const remaining = formatRemaining(remainingMs)
-          const clockLabel = list.length === 1
-            ? `(by ${formatClockTime(new Date(earliest.due_at!), userTz)})`
-            : undefined
-          const message = buildDeadlineMessage(
-            list.map((a) => ({ title: a.title, dueAt: a.due_at })),
-            remaining,
-            clockLabel,
-          )
-          const notifTitle = `Due in ${remaining} ${threshold.icon}`
-
           // Claim the bucket FIRST — never send without a durable dedup record.
           // (An insert failure previously meant repeated sends every run.)
-          const { error: claimError } = await serviceClient.from("nudge_logs").upsert(
+          const { data: claimed, error: claimError } = await serviceClient.from("nudge_logs").upsert(
             list.map((a) => ({
               user_id: userId,
               assignment_id: a.id,
@@ -387,13 +326,34 @@ export const nudgeEngine = schedules.task({
               sent_at: now.toISOString(),
             })),
             { onConflict: "user_id,assignment_id,nudge_type", ignoreDuplicates: true },
-          )
+          ).select("assignment_id")
           if (claimError) {
             console.error(`[nudge-engine] Section B uid=${userId} ${threshold.type} claim failed — NOT sending:`, claimError.message)
             continue
           }
 
-          console.log(`[nudge-engine] Section B uid=${userId} sending ${threshold.type} deadline nudge for ${list.length} assignment(s): "${message}"`)
+          const claimedIds = new Set((claimed ?? []).map(row => row.assignment_id))
+          const claimedList = list.filter(row => claimedIds.has(row.id))
+          if (!claimedList.length) continue
+          const earliest = claimedList[0] // query is ordered by due_at asc; bucket filter preserves order
+          const remainingMs = new Date(earliest.due_at!).getTime() - Date.now()
+          if (remainingMs <= 0 || !canNotify(pf, new Date())) {
+            await serviceClient.from("nudge_logs").delete().eq("user_id", userId)
+              .in("assignment_id", claimedList.map(a => a.id)).eq("nudge_type", threshold.type).eq("sent_at", now.toISOString())
+            continue
+          }
+          const remaining = formatRemaining(remainingMs)
+          const clockLabel = claimedList.length === 1
+            ? `(by ${formatClockTime(new Date(earliest.due_at!), tzByUser.get(userId) ?? getDefaultTimezone())})`
+            : undefined
+          const message = buildDeadlineMessage(
+            claimedList.map((a) => ({ title: a.title, dueAt: a.due_at })),
+            remaining,
+            clockLabel,
+          )
+          const notifTitle = `Due in ${remaining} ${threshold.icon}`
+
+          console.log(`[nudge-engine] Section B uid=${userId} sending ${threshold.type} deadline nudge for ${claimedList.length} assignment(s)`)
           let delivered = false
           for (const sub of subs) {
             const subscription: webpush.PushSubscription = {
@@ -403,7 +363,9 @@ export const nudgeEngine = schedules.task({
             try {
               // Expire with the deadline itself — a "due in 1h" nudge held by
               // the push service must not ping the student 20 hours late.
-              await sendPushNotification(subscription, message, notifTitle, Math.max(60, Math.floor(remainingMs / 1000)))
+              const ttl = Math.floor((new Date(earliest.due_at!).getTime() - Date.now()) / 1000)
+              if (ttl <= 0 || !canNotify(pf, new Date())) break
+              await sendPushNotification(subscription, message, notifTitle, ttl, claimedList.length === 1 ? earliest.id : undefined)
               delivered = true
               console.log(`[nudge-engine] Section B uid=${userId} ${threshold.type} push sent successfully ✓`)
             } catch (err: unknown) {
@@ -426,7 +388,8 @@ export const nudgeEngine = schedules.task({
               .from("nudge_logs")
               .delete()
               .eq("user_id", userId)
-              .in("assignment_id", list.map((a) => a.id))
+              .in("assignment_id", claimedList.map((a) => a.id))
+              .eq("sent_at", now.toISOString())
               .eq("nudge_type", threshold.type)
             console.log(`[nudge-engine] Section B uid=${userId} released ${threshold.type} claim (0 devices delivered)`)
           }
@@ -458,19 +421,7 @@ export const nudgeEngine = schedules.task({
     const sectionDResults = await Promise.allSettled(
       [...subsByUser.entries()].map(async ([userId, subs]) => {
         const pf = profileByUser.get(userId)
-        const userTz = tzByUser.get(userId) ?? getDefaultTimezone()
-
-        if (pf) {
-          const localHour = getLocalHour(now, userTz)
-          if (isInQuietHours(pf.quiet_hours_start, pf.quiet_hours_end, localHour)) {
-            console.log(`[nudge-engine] Section D uid=${userId} in quiet hours — skipping`)
-            return
-          }
-          if (pf.nudge_paused_until && new Date(pf.nudge_paused_until) > now) {
-            console.log(`[nudge-engine] Section D uid=${userId} nudges paused — skipping`)
-            return
-          }
-        }
+        if (!canNotify(pf, new Date())) return
 
         // Past-due, incomplete, non-dismissed assignments for this user.
         // Fetch up to 25 (not just 5): with >5 overdue, the oldest 5 once
@@ -533,7 +484,7 @@ export const nudgeEngine = schedules.task({
             continue
           }
 
-          console.log(`[nudge-engine] Section D uid=${userId} overdue nudge for "${a.title}"`)
+          console.log(`[nudge-engine] Section D uid=${userId} overdue nudge claimed`)
           let delivered = false
           for (const sub of subs) {
             const subscription: webpush.PushSubscription = {
@@ -542,7 +493,7 @@ export const nudgeEngine = schedules.task({
             }
             try {
               const remainingTtl = overdueReminderTtl(a.due_at, new Date())
-              if (remainingTtl === 0) break
+              if (remainingTtl === 0 || !canNotify(pf, new Date())) break
               await sendPushNotification(subscription, nudgeText, "Overdue assignment", remainingTtl, a.id)
               delivered = true
             } catch (err: unknown) {
@@ -567,7 +518,7 @@ export const nudgeEngine = schedules.task({
               .eq("user_id", userId)
               .eq("assignment_id", a.id)
               .eq("nudge_type", "overdue")
-            console.log(`[nudge-engine] Section D uid=${userId} released claim for "${a.title}" (0 devices delivered)`)
+            console.log(`[nudge-engine] Section D uid=${userId} released overdue claim (0 devices delivered)`)
           }
         }
       }),

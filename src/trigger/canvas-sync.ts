@@ -1,4 +1,6 @@
-import { schedules } from "@trigger.dev/sdk/v3"
+import { readAllPages } from "@/lib/read-all-pages"
+import { canNotify } from "@/lib/notification-preferences"
+import { queue, schedules } from "@trigger.dev/sdk/v3"
 import { createServerClient } from "@supabase/ssr"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { env } from "@/lib/env"
@@ -14,6 +16,7 @@ import ws from "ws"
 // reaches the DB and the nudge engine has nothing to nudge about.
 export const canvasSync = schedules.task({
   id: "canvas-sync",
+  queue: queue({ name: "canvas-sync", concurrencyLimit: 1 }),
   cron: "5,35 * * * *", // every 30 min (UTC), offset from the nudge engine's */15 runs
   run: async () => {
     // The ws transport is required even though this task never subscribes to
@@ -29,13 +32,10 @@ export const canvasSync = schedules.task({
       },
     )
 
-    const { data: profiles, error } = await serviceClient
-      .from("profiles")
-      .select("id")
-      .not("canvas_token", "is", null)
-      .not("canvas_domain", "is", null)
-
-    if (error) throw new Error(`[canvas-sync] profiles query failed: ${error.message}`)
+    const profiles = await readAllPages((from, to) => serviceClient
+      .from("profiles").select("id")
+      .not("canvas_token", "is", null).not("canvas_domain", "is", null)
+      .order("id").range(from, to))
 
     const userIds = (profiles ?? []).map((p) => p.id)
     console.log(`[canvas-sync] syncing ${userIds.length} user(s)`)
@@ -81,10 +81,15 @@ export const canvasSync = schedules.task({
 // via nudge_logs, same pattern as the nudge engine.
 const TOKEN_EXPIRED_RENOTIFY_MS = 72 * 60 * 60 * 1000
 
-async function notifyTokenExpired(
+export async function notifyTokenExpired(
   serviceClient: SupabaseClient<Database>,
   userId: string,
 ): Promise<void> {
+  if (env.NUDGE_ENABLED !== "true") return
+  const { data: profile } = await serviceClient.from("profiles")
+    .select("timezone, quiet_hours_start, quiet_hours_end, nudge_paused_until")
+    .eq("id", userId).single().throwOnError()
+  if (!canNotify(profile, new Date())) return
   const since = new Date(Date.now() - TOKEN_EXPIRED_RENOTIFY_MS).toISOString()
   const { data: recent } = await serviceClient
     .from("nudge_logs")
@@ -93,6 +98,7 @@ async function notifyTokenExpired(
     .eq("nudge_type", "token_expired")
     .gte("sent_at", since)
     .limit(1)
+    .throwOnError()
 
   if (recent && recent.length > 0) return // already notified within 72h
 

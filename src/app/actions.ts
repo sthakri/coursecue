@@ -17,7 +17,7 @@ export async function saveNotificationSettings(
   const quietEndRaw = Number(formData.get("quiet_hours_end"));
   const quietStart = quietEnabled && Number.isInteger(quietStartRaw) && quietStartRaw >= 0 && quietStartRaw <= 23 ? quietStartRaw : null;
   const quietEnd = quietEnabled && Number.isInteger(quietEndRaw) && quietEndRaw >= 0 && quietEndRaw <= 23 ? quietEndRaw : null;
-  if (quietEnabled && (quietStart === null || quietEnd === null)) {
+  if (quietEnabled && (quietStart === null || quietEnd === null || quietStart === quietEnd)) {
     return { error: "Choose valid start and end times for quiet hours." };
   }
 

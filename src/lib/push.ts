@@ -32,6 +32,17 @@ const confirmedEndpoints = new Map<string, string>();
 
 export class PushSetupError extends Error {}
 
+export async function disablePushNotifications(): Promise<void> {
+  lifecycle++;
+  clearPushSyncMarkers();
+  const subscription = await getDeviceSubscription();
+  if (!subscription) return;
+  await withPushTimeout(subscription.unsubscribe(), "Disabling notifications timed out. Please try again.");
+  if (await getDeviceSubscription()) throw new PushSetupError("Notifications are still enabled. Please try again.");
+  const response = await pushRequest("/api/push/subscribe", "DELETE", { endpoint: subscription.endpoint });
+  if (!response.ok) throw new PushSetupError("This browser stopped notifications, but server cleanup failed. You can retry by enabling and disabling nudges.");
+}
+
 export function supportsPush(): boolean {
   return typeof window !== "undefined" && window.isSecureContext !== false &&
     "Notification" in window && "serviceWorker" in navigator && typeof PushManager !== "undefined";

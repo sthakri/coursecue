@@ -15,6 +15,7 @@ export async function sendPushNotification(
   title = "CourseCue",
   ttlSeconds = 24 * 60 * 60,
   assignmentId?: string,
+  silent?: boolean,
 ): Promise<void> {
   // Validate stored rows too: older subscriptions did not restrict destinations.
   pushEndpointSchema.parse(subscription.endpoint);
@@ -23,7 +24,7 @@ export async function sendPushNotification(
   // offline phone can't arrive 20 hours stale.
   await webpush.sendNotification(
     subscription,
-    JSON.stringify({ title, body: message, assignmentId }),
+    JSON.stringify({ title, body: message, assignmentId, silent }),
     { TTL: ttlSeconds }
   );
 }

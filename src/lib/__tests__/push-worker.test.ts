@@ -22,6 +22,13 @@ function loadWorker() {
 }
 
 describe("CourseCue push worker", () => {
+  it.each([true, false, undefined])("uses silent delivery only when explicitly requested: %s", async silent => {
+    const worker = loadWorker();
+    await worker.dispatch("push", { data: { json: () => ({ body: "Test", silent }) } });
+    const options = worker.showNotification.mock.calls[0][1];
+    expect(options.silent).toBe(silent === true ? true : undefined);
+    expect(options.vibrate).toBeUndefined();
+  });
   it("displays a default visible notification for a malformed payload", async () => {
     const worker = loadWorker();
     await worker.dispatch("push", { data: { json: () => { throw new SyntaxError(); } } });

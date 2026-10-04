@@ -5,11 +5,11 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
-import { enablePushNotifications, getDeviceSubscription, pushErrorMessage, savePushSubscription, supportsPush } from "@/lib/push";
+import { disablePushNotifications, enablePushNotifications, getDeviceSubscription, pushErrorMessage, savePushSubscription, supportsPush } from "@/lib/push";
 
-type PushState = "loading" | "idle" | "requesting" | "subscribed" | "denied" | "unsupported";
+type PushState = "loading" | "idle" | "requesting" | "disabling" | "subscribed" | "denied" | "unsupported";
 
-export default function PushNotificationButton({ userId }: { userId: string }) {
+export default function PushNotificationButton({ userId, allowDisable = false }: { userId: string; allowDisable?: boolean }) {
   const [state, setState] = useState<PushState>("loading");
   const requesting = useRef(false);
   const checkVersion = useRef(0);
@@ -59,15 +59,34 @@ export default function PushNotificationButton({ userId }: { userId: string }) {
     } finally { requesting.current = false; }
   }
 
+  async function handleDisable() {
+    if (requesting.current) return;
+    requesting.current = true;
+    checkVersion.current++;
+    setState("disabling");
+    try {
+      await disablePushNotifications();
+      toast.success("Nudges disabled on this device");
+    } catch (error) { toast.error(pushErrorMessage(error)); }
+    finally {
+      requesting.current = false;
+      setState("idle");
+      window.dispatchEvent(new Event("push-subscription-changed"));
+    }
+  }
+
   if (state === "unsupported") return <div role="status" className="text-muted-foreground text-xs">Notifications unavailable in this browser</div>;
   if (state === "denied") return <div role="status" className="text-muted-foreground text-xs">Notifications blocked — enable in device settings</div>;
   if (state === "subscribed") return (
+    <div className="flex flex-wrap items-center gap-3">
     <span role="status" className="flex items-center gap-1.5 text-success text-sm font-medium">
       <CheckCircle size={15} aria-hidden="true" /> Nudges enabled
     </span>
+    {allowDisable && <button type="button" onClick={handleDisable} className="min-h-11 rounded-sm border border-input px-3 text-sm text-foreground hover:bg-muted">Disable on this device</button>}
+    </div>
   );
 
-  const busy = state === "loading" || state === "requesting";
+  const busy = state === "loading" || state === "requesting" || state === "disabling";
   return (
     <Button
       type="button"
@@ -77,7 +96,7 @@ export default function PushNotificationButton({ userId }: { userId: string }) {
       onClick={handleClick}
     >
       {busy && <Loader2 size={14} className="animate-spin" aria-hidden="true" />}
-      {state === "loading" ? "Checking nudges…" : state === "requesting" ? "Enabling nudges…" : "Enable Nudges"}
+      {state === "loading" ? "Checking nudges…" : state === "requesting" ? "Enabling nudges…" : state === "disabling" ? "Disabling nudges…" : "Enable Nudges"}
     </Button>
   );
 }

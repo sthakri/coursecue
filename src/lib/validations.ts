@@ -53,6 +53,7 @@ export const pushSubscribeSchema = z.object({
 
 export const pushTestSchema = z.object({
   endpoint: pushEndpointSchema,
+  silent: z.boolean().default(false),
 });
 
 export const nudgeTestQuerySchema = z.object({

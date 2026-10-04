@@ -89,6 +89,13 @@ beforeEach(() => {
 });
 
 describe("test notification subscription lookup", () => {
+  it.each([true, false])("sends the selected test mode only to the current account's device: silent=%s", async silent => {
+    rows = [{ ...device, user_id: "current-user" }];
+    const response = await testPush(request({ endpoint: device.endpoint, silent }));
+    expect(response.status).toBe(200);
+    expect(boundary.sendPush).toHaveBeenCalledWith(expect.objectContaining({ endpoint: device.endpoint }),
+      expect.any(String), "CourseCue test", 60, undefined, silent);
+  });
   it("keeps a healthy device subscribed when the database lookup fails", async () => {
     const existing = { ...device, user_id: "current-user" };
     rows = [existing];
