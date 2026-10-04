@@ -19,7 +19,7 @@ export default async function SettingsPage() {
     .from("profiles")
     .select("canvas_token, canvas_domain, quiet_hours_start, quiet_hours_end, nudge_frequency, stress_threshold, nudge_paused_until, timezone")
     .eq("id", user.id)
-    .single();
+    .single().throwOnError();
 
   return (
     <>
@@ -62,8 +62,17 @@ export default async function SettingsPage() {
           <section className="rounded-sm bg-card border border-border p-5 sm:p-6">
             <h2 className="text-foreground font-semibold text-lg mb-4">Push Notifications</h2>
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <PushNotificationButton userId={user.id} />
+              <PushNotificationButton userId={user.id} allowDisable />
               <TestNotifButton />
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">Quiet hours and pause stop scheduled nudges on every device. A test notification is sent immediately. Sound, vibration, and Focus or Do Not Disturb are controlled by your device; CourseCue cannot force an audible alert.</p>
+          </section>
+
+          <section className="rounded-sm border border-border bg-card p-5 sm:p-6">
+            <h2 className="text-lg font-semibold">Help & feedback</h2>
+            <div className="mt-3 flex flex-wrap gap-4 text-sm font-semibold text-info">
+              <Link href="/install" className="inline-flex min-h-11 items-center underline">Install on your phone</Link>
+              <Link href="/feedback" className="inline-flex min-h-11 items-center underline">Share feedback</Link>
             </div>
           </section>
 

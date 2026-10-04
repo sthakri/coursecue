@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 // /auth/callback MUST be public: email-confirmation and password-reset links
 // hit it precisely when the user has NO session. Gating it previously made
 // every email link dead-end at /login with the one-time code lost.
-const PUBLIC_PATHS = ["/", "/login", "/features", "/how-it-works", "/install", "/reset-password", "/auth/callback"];
+const PUBLIC_PATHS = ["/", "/login", "/features", "/how-it-works", "/install", "/feedback", "/reset-password", "/auth/callback"];
 
 // Exact match or path-segment prefix — NOT raw startsWith, which would also
 // expose /login-whatever, /installjunk, /reset-password-2, etc.

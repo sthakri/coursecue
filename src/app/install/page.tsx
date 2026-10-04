@@ -2,23 +2,9 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Share2, ArrowDown, Plus, CheckCircle, Ellipsis, Smartphone, Zap } from "lucide-react";
+import { CheckCircle, Smartphone, Zap } from "lucide-react";
 
-type Platform = "ios" | "android";
-
-const iosSteps = [
-  { icon: Share2, label: "Tap the Share icon at the bottom of Safari" },
-  { icon: ArrowDown, label: 'Scroll down and tap "Add to Home Screen"' },
-  { icon: Plus, label: 'Tap "Add" in the top-right corner' },
-  { icon: CheckCircle, label: "Open CourseCue from your Home Screen — done!" },
-];
-
-const androidSteps = [
-  { icon: Ellipsis, label: "Tap the three-dot menu in the top-right of Chrome" },
-  { icon: ArrowDown, label: '"Add to Home Screen" or "Install app"' },
-  { icon: Plus, label: 'Tap "Add" in the dialog that appears' },
-  { icon: CheckCircle, label: "Open CourseCue from your Home Screen — done!" },
-];
+import InstallSteps, { type InstallPlatform as Platform } from "@/components/pwa/InstallSteps";
 
 function isStandalone(): boolean {
   if (typeof window === "undefined" || typeof navigator === "undefined") return false;
@@ -56,7 +42,7 @@ export default function InstallPage() {
           <CheckCircle className="text-success w-8 h-8" />
         </div>
         <h1 className="text-foreground font-bold text-2xl mb-2">You&apos;re already installed</h1>
-        <p className="text-muted-foreground text-sm mb-6 max-w-xs text-center">CourseCue is running as a Home Screen app on this device.</p>
+        <p className="text-muted-foreground text-sm mb-6 max-w-md text-center">CourseCue is running as a Home Screen app on this device.</p>
         <button onClick={handleBypass}
           className="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-6 py-3 rounded-sm transition-colors">
           Open Dashboard
@@ -65,7 +51,6 @@ export default function InstallPage() {
     );
   }
 
-  const steps = platform === "ios" ? iosSteps : androidSteps;
 
   return (
     <main className="min-h-screen bg-background flex flex-col items-center justify-start px-4 pt-14 pb-10 text-foreground">
@@ -80,18 +65,18 @@ export default function InstallPage() {
           </div>
           <span className="font-bold text-foreground text-sm tracking-tight">CourseCue</span>
         </div>
-        <h1 className="text-foreground font-bold text-2xl leading-tight max-w-xs">
+        <h1 className="text-foreground font-bold text-2xl leading-tight max-w-md">
           Add CourseCue to Your Home Screen
         </h1>
-        <p className="text-muted-foreground text-sm mt-3 max-w-xs leading-relaxed">
+        <p className="text-muted-foreground text-sm mt-3 max-w-md leading-relaxed">
           {platform === "ios"
-            ? "Push notifications and the full app experience only work when CourseCue is installed as a standalone app."
+            ? "Install for push notifications on iPhone and iPad. Your planner also works in Safari."
             : "Push notifications work straight from Chrome — installing to your Home Screen just makes CourseCue feel like a native app."}
         </p>
       </div>
 
       {/* Platform toggle */}
-      <div className="flex items-center gap-1 bg-card border border-border rounded-sm p-1 mb-6 w-full max-w-xs">
+      <div className="flex items-center gap-1 bg-card border border-border rounded-sm p-1 mb-6 w-full max-w-md">
         {(["ios", "android"] as Platform[]).map((p) => (
           <button key={p} onClick={() => setPlatform(p)} aria-pressed={platform === p}
             className={`flex-1 py-2 rounded-sm text-sm font-medium transition-all ${platform === p ? "bg-primary text-white shadow-none" : "text-muted-foreground hover:text-muted-foreground"}`}>
@@ -101,30 +86,13 @@ export default function InstallPage() {
       </div>
 
       {/* Steps card */}
-      <div className="w-full max-w-xs rounded-sm bg-card border border-border p-5 mb-5">
+      <div className="w-full max-w-md rounded-sm bg-card border border-border p-5 mb-5">
         <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-4">How to install</p>
-        <div className="space-y-4">
-          {steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-subtle border border-border text-muted-foreground text-[11px] font-bold shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <div className="flex items-center gap-2 min-w-0">
-                <step.icon className="text-info w-4 h-4 shrink-0" />
-                <p className="text-muted-foreground text-sm leading-snug">{step.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        {platform === "ios" && (
-          <p className="text-muted-foreground text-xs leading-relaxed mt-4 pt-4 border-t border-border">
-            Web push requires iOS 16.4 or later.
-          </p>
-        )}
+        <InstallSteps platform={platform} />
       </div>
 
       {/* Why it matters */}
-      <div className="w-full max-w-xs rounded-sm bg-info-soft border border-info/20 p-4 mb-8">
+      <div className="w-full max-w-md rounded-sm bg-info-soft border border-info/20 p-4 mb-8">
         <p className="text-info text-sm font-semibold mb-1">Why does this matter?</p>
         <p className="text-muted-foreground text-sm leading-relaxed">
           {platform === "ios"
@@ -134,11 +102,11 @@ export default function InstallPage() {
       </div>
 
       {/* Bypass */}
-      <div className="w-full max-w-xs flex flex-col items-center gap-3">
+      <div className="w-full max-w-md flex flex-col items-center gap-3">
         <p className="text-muted-foreground text-xs text-center">Already added it? Open CourseCue from your Home Screen icon instead.</p>
         <button onClick={handleBypass}
           className="text-muted-foreground hover:text-muted-foreground hover:bg-card text-sm w-full py-2.5 rounded-sm transition-colors bg-transparent border border-border">
-          Continue to Dashboard Anyway
+          Continue in browser
         </button>
       </div>
     </main>

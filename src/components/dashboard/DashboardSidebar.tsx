@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -8,6 +8,7 @@ import {
   BookOpen,
   BarChart2,
   Settings,
+  MessageSquare,
   LogOut,
   Zap,
   X,
@@ -18,12 +19,15 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { unsubscribePushDevice } from "@/lib/push";
 import { useRouter } from "next/navigation";
+import { Dialog } from "radix-ui";
+import { toast } from "sonner";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/assignments", label: "Assignments", icon: BookOpen },
   { href: "/dashboard/insights", label: "Insights", icon: BarChart2 },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/feedback", label: "Feedback", icon: MessageSquare },
 ];
 
 function NavItems({
@@ -81,30 +85,35 @@ export default function DashboardSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      const stored = localStorage.getItem("sidebar_collapsed");
-      return stored === "true";
-    } catch {
-      return false;
-    }
-  });
+  const collapsed = useSyncExternalStore(
+    (onChange) => { window.addEventListener("storage", onChange); return () => window.removeEventListener("storage", onChange); },
+    () => { try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; } },
+    () => false,
+  );
+  const [signingOut, setSigningOut] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   function toggleCollapse() {
     const next = !collapsed;
-    setCollapsed(next);
-    try { localStorage.setItem("sidebar_collapsed", String(next)); } catch {}
+    try { localStorage.setItem("sidebar_collapsed", String(next)); window.dispatchEvent(new Event("storage")); } catch {}
   }
 
   async function handleSignOut() {
     // Tear down push BEFORE signOut: the DELETE endpoint needs a valid
     // session, and the browser subscription would otherwise keep receiving
     // nudges after logout.
-    await unsubscribePushDevice();
-    await createClient().auth.signOut({ scope: "local" });
-    router.push("/");
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await unsubscribePushDevice();
+      const { error } = await createClient().auth.signOut({ scope: "local" });
+      if (error) { toast.error("Could not sign out. Check your connection and try again."); return; }
+      router.replace("/");
+      router.refresh();
+    } catch { toast.error("Could not sign out. Please try again."); }
+    finally { setSigningOut(false); }
+
   }
 
   return (
@@ -113,20 +122,18 @@ export default function DashboardSidebar({
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3.5 left-4 z-50 w-8 h-8 rounded-sm bg-card border border-border flex items-center justify-center text-foreground hover:text-primary-hover"
+        className="lg:hidden fixed top-3.5 left-4 z-50 w-10 h-10 rounded-sm bg-card border border-border flex items-center justify-center text-foreground hover:text-primary-hover"
         aria-label="Open menu"
       >
         <Menu size={16} />
       </button>
 
       {/* ── Mobile drawer ────────────────────────────────────────────────── */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div
-            className="absolute inset-0 bg-overlay/55"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside className="relative w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-full shadow-lg">
+      <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-overlay/55" />
+          <Dialog.Content aria-describedby={undefined} className="fixed inset-y-0 left-0 z-50 flex w-64 max-w-[85vw] flex-col border-r border-sidebar-border bg-sidebar shadow-lg">
+            <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
             <div className="flex items-center justify-between px-5 py-5 border-b border-sidebar-border">
               <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary-soft">
@@ -159,9 +166,9 @@ export default function DashboardSidebar({
                 </button>
               </div>
             </div>
-          </aside>
-        </div>
-      )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {/* ── Desktop sidebar ──────────────────────────────────────────────── */}
       <aside
@@ -219,25 +226,25 @@ export default function DashboardSidebar({
         </div>
       </aside>
       {/* Sign-out confirmation modal */}
-      {showSignOutConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-overlay/55" onClick={() => setShowSignOutConfirm(false)} />
-          <div className="relative w-full max-w-sm rounded-md bg-card border border-border p-6 shadow-lg">
-            <h3 className="text-foreground font-semibold text-base mb-2">Sign out</h3>
-            <p className="text-muted-foreground text-sm mb-6">Are you sure you want to sign out? You can sign back in anytime.</p>
+      <Dialog.Root open={showSignOutConfirm} onOpenChange={open => { if (!signingOut) setShowSignOutConfirm(open); }}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[100] bg-overlay/55" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-[101] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-card p-6 shadow-lg">
+            <Dialog.Title className="mb-2 text-base font-semibold">Sign out</Dialog.Title>
+            <Dialog.Description className="mb-6 text-sm text-muted-foreground">Sign out of this browser and stop its notifications? You can sign back in anytime.</Dialog.Description>
             <div className="flex items-center gap-3 justify-end">
-              <button type="button" onClick={() => setShowSignOutConfirm(false)}
+              <button type="button" disabled={signingOut} onClick={() => setShowSignOutConfirm(false)}
                 className="rounded-sm border border-border bg-background text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2 transition-colors">
                 Cancel
               </button>
-              <button type="button" onClick={handleSignOut}
+              <button type="button" disabled={signingOut} onClick={handleSignOut}
                 className="rounded-sm bg-danger hover:bg-danger-hover text-white text-sm font-medium px-4 py-2 transition-colors">
-                Sign out
+                {signingOut ? "Signing out…" : "Sign out"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }
