@@ -29,12 +29,16 @@ next-env.d.ts
 /public/worker-*.js
 /public/workbox-*.js
 
-# Local agent instructions, documentation, and personal notes
+# Local agent instructions and personal notes; publish maintained project docs
 /AGENTS.md
 /CLAUDE.md
-/docs/
+/docs/*
+!/docs/GETTING_STARTED.md
+!/docs/DEPLOYMENT.md
+!/docs/ARCHITECTURE.md
+!/docs/UI_PATTERNS.md
+!/docs/RELEASE_CHECKS.md
 /ui-registry.md
-/CONTRIBUTING.md
 /DEPLOYMENT.md
 /ARCHITECTURE.md
 /.github/instructions/
@@ -46,7 +50,6 @@ next-env.d.ts
 /memory.md
 /.zcode/
 /plans/
-/components.json
 /database.types.ts
 
 # Local database utilities
@@ -55,7 +58,7 @@ next-env.d.ts
 /supabase/migrate-encrypt-tokens.ts
 
 # Local media exports and development logs
-/brag-output/
+/brag-output*/
 /dev-server.log
 npm-debug.log*
 yarn-debug.log*

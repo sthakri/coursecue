@@ -11,6 +11,9 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    ".trigger/**",
+    ".vercel/**",
+    "brag-output*/**",
     "next-env.d.ts",
     // PWA generated files:
     "public/sw.js",

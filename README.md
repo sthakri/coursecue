@@ -1,6 +1,8 @@
 # CourseCue
 
-**Your Canvas assignments, organised around what comes next.**
+**Your Canvas coursework, organised around what comes next.**
+
+[Open CourseCue](https://coursecue.vercel.app) · [Installation help](https://coursecue.vercel.app/install) · [Feedback](https://coursecue.vercel.app/feedback)
 
 CourseCue brings Canvas coursework into one student dashboard: approaching deadlines, a searchable assignment planner, workload charts, and study reminders with AI-generated wording.
 
@@ -10,15 +12,19 @@ Built with **Next.js · React · TypeScript · Supabase · D3 · Trigger.dev**. 
 
 | Area | Current implementation |
 | --- | --- |
-| Canvas sync | Imports courses, assignments, and due dates, with manual refresh and a scheduled sync every 30 minutes. |
+| Canvas sync | Imports assignments, quizzes, graded discussions, and undated coursework from active courses, with manual refresh and a scheduled sync every 30 minutes. |
 | Assignment planner | Date groups, search, course filters, 7/14/30-day windows, and pagination. Completion and dismissal states survive sync. |
 | Workload | D3 heatmaps and charts show upcoming coursework and recorded activity. |
 | Study reminders | Deadline, recent-overdue, and activity-window nudges, with quiet hours, frequency preferences, and pause controls. NVIDIA NIM generates wording, with fallback messages. |
 | Mobile access | Installable PWA with Web Push on supported browsers and devices. |
 
-**Status:** actively evolving. The product direction is still being explored; the features above describe the current code, not a finished roadmap.
+Canvas imports cover the past 30 days and next 60 days, plus undated assignments in active courses. Previously synced work remains available. Exams appear when Canvas exposes them as assignments or quizzes; unpublished and inaccessible content cannot be imported.
 
 Marking an assignment complete or dismissing it updates CourseCue only; it does not submit work to Canvas. Activity insights use dashboard activity scores and heuristics rather than measuring study time or predicting academic performance. Push delivery depends on device support, permission, and configured background jobs.
+
+## Feedback
+
+Use **Feedback** in the app navigation to open an email draft for suggestions, questions, or bugs. Public technical reports can go to [GitHub Issues](https://github.com/sthakri/coursecue/issues). Please keep passwords, Canvas tokens, and private coursework out of reports.
 
 ## Run locally
 
@@ -129,3 +135,10 @@ npx trigger.dev@4.6.3 deploy
 Canvas sync is scheduled every 30 minutes (`5,35 * * * *`, UTC); the nudge engine checks every 15 minutes (`*/15 * * * *`, UTC). Set `NUDGE_ENABLED=true` only when reminders should be sent. Overdue reminders are eligible during the first 72 hours after a deadline, at most once per assignment per 24 hours. Older overdue work remains accessible in the planner.
 
 Before publishing a change, run tests, lint, type checking, and a production build with valid configuration. Tests use mocked integrations; a successful build does not prove live credentials, database migration state, scheduled runs, or device delivery. Verify those separately when changing the affected integration.
+
+## Project documentation
+
+- [Architecture](docs/ARCHITECTURE.md) — data flow and boundaries
+- [Deployment](docs/DEPLOYMENT.md) — Vercel, Trigger.dev, and database setup
+- [Release checks](docs/RELEASE_CHECKS.md) — verification and device checks
+- [Contributing](CONTRIBUTING.md) — conventions and review requirements
